@@ -28,7 +28,7 @@ build.mustRunAfter clean
 
 task fatJar(type: Jar) {
     manifest {
-        attributes 'Implementation-Title': 'ProgettoPSW-REST',
+        attributes 'Implementation-Title': 'ProgettoTBD-REST',
                 'Main-Class': 'com.gb.restApp.Main'
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE

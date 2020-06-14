@@ -20,7 +20,7 @@ public class Constants {
     public static final String CONT_TYPE    = "content-type";
     public static final String SUCCESS      = "success";
     public static final String FAILURE      = "error";
-    public static final String DB_PATH      = "jdbc:sqlite:.\\musicDB.db";
+    public static final String DB_PATH      = "jdbc:postgresql://localhost:5432/MusicDBPostgres?currentSchema=MusicDB";
     public static final int    PAGE_SIZE    = 10;
 
 }

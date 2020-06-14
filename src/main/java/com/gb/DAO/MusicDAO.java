@@ -20,22 +20,17 @@ public interface MusicDAO {
     List<Music> getMusicById(long id);
 
     /**
+     * GET /music/joinall
+     * Join su tutti gli ID
+     */
+    List<Music> getMusicJoinAll(long id);
+
+    /**
      * GET /music?params
      * GET su collezione con parametri --> Restituisce una rappresentazione
      * delle risorse con determinati parametri.
      */
     List<Music> getMusicByParams(SearchFilter filter, int page);
-
-    /**
-     * GET su attributo/i di risorsa --> Non implementato. Scelta di progetto
-     * legata alla decisione di restituire un certo formato di JSON sempre uguale
-     */
-
-    /**
-     * PUT /music
-     * PUT su collezione --> Aggiunge elementi alla collezione
-     */
-    int addManyMusic(List<Music> musicList);
 
     /**
      * PUT /music/:id
@@ -48,14 +43,6 @@ public interface MusicDAO {
      * POST su collezione --> Inserisce un elemento nella collezione
      */
     int addOneMusic(Music music);
-
-    /**
-     * POST su risorsa --> Non implementato. Generalmente non fatto
-     */
-
-    /**
-     * DELETE su collezione --> Non implementato.
-     */
 
     /**
      * DELETE /music/:id

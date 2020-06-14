@@ -1,7 +1,7 @@
 package com.gb.restApp;
 
 import static spark.Spark.*;
-import com.gb.db.SQLiteJDBC.SQLiteJDBCImpl;
+import com.gb.db.PostgreSQLImpl.PostgreSQLImpl;
 import com.gb.modelObject.Music;
 import com.gb.modelObject.SearchFilter;
 import com.google.common.io.ByteStreams;
@@ -21,6 +21,7 @@ import static javax.ws.rs.core.MediaType.*;
 import static com.gb.Constants.*;
 import static com.gb.utils.JSONUtils.*;
 import static com.gb.utils.UtilFunctions.*;
+import static com.gb.utils.HTMLFormatter.*;
 /**
  * Documentazione per le costanti rappresentanti gli stati HTTP, fornite da Apache HTTP:
  * http://hc.apache.org/httpcomponents-core-ga/httpcore/apidocs/org/apache/http/HttpStatus.html
@@ -41,15 +42,14 @@ public class Main {
 
         port(8080);
 
+        staticFiles.location("/public");
+
         before(Main::applyFilters);
 
         get("/", Main::getHomepage);
 
         path("/music", () -> {
             get("",  Main::getMusic);
-
-            put("",  Main::addMany);
-            put("/", Main::addMany);
 
             post("",  Main::addOne);
             post("/", Main::addOne);
@@ -111,7 +111,7 @@ public class Main {
         /**
          * Mette il content-type della Response a "application/json"
          */
-        res.raw().setContentType(APPLICATION_JSON);
+        res.raw().setContentType(TEXT_HTML);
 
         /**
          * Logga la Request
@@ -179,7 +179,7 @@ public class Main {
     private static String getMusic(Request req, Response res) {
         int pageNum = 0;
 
-        SQLiteJDBCImpl db = SQLiteJDBCImpl.getInstance();
+        PostgreSQLImpl db = PostgreSQLImpl.getInstance();
         if (db == null) {
             return handleInternalError(req, res);
         }
@@ -229,13 +229,16 @@ public class Main {
         } else msg = "Lista contenente musica sul database (pagina "+pageNum+").";
 
         res.status(SC_OK);
+        /*
         String jsonString = formatMusic(musicList, SC_OK, SUCCESS, msg);
         info(jsonString);
         return jsonString;
+         */
+        return FormatMusic(musicList);
     }
 
     private static String getMusicById(Request req, Response res) {
-        SQLiteJDBCImpl db = SQLiteJDBCImpl.getInstance();
+        PostgreSQLImpl db = PostgreSQLImpl.getInstance();
         if (db == null) {
             return handleInternalError(req, res);
         }
@@ -267,7 +270,7 @@ public class Main {
             return handleUnsupportedMediaType(req, res);
         }
 
-        SQLiteJDBCImpl db = SQLiteJDBCImpl.getInstance();
+        PostgreSQLImpl db = PostgreSQLImpl.getInstance();
         if (db == null) {
             return handleInternalError(req, res);
         }
@@ -289,7 +292,7 @@ public class Main {
             }
             if(result == -1) {
                 res.status(SC_CONFLICT);
-                String jsonString = formatMessage("Esiste gia' una musica con id "+musicToAdd.getId()+".",
+                String jsonString = formatMessage("Esiste gia' una musica con id "+musicToAdd.getMusicId()+".",
                         SC_CONFLICT, FAILURE);
                 info(jsonString);
                 return jsonString;
@@ -297,43 +300,8 @@ public class Main {
         }
 
         res.status(SC_CREATED);
-        String jsonString = formatMessage("Musica con id "+musicToAdd.getId()+" aggiunta con successo.",
+        String jsonString = formatMessage("Musica con id "+musicToAdd.getMusicId()+" aggiunta con successo.",
                     SC_CREATED, SUCCESS);
-        info(jsonString);
-        return jsonString;
-    }
-
-    private static String addMany(Request req, Response res) {
-        if(req.contentType() == null || !req.contentType().equals(APPLICATION_JSON)) {
-            return handleUnsupportedMediaType(req, res);
-        }
-
-        SQLiteJDBCImpl db = SQLiteJDBCImpl.getInstance();
-        if (db == null) {
-            return handleInternalError(req, res);
-        }
-
-        List<Music> musicToAdd;
-        try {
-            Type musicListType = new TypeToken<List<Music>>(){}.getType();
-            musicToAdd = new Gson().fromJson(req.body(), musicListType);
-        } catch(JsonSyntaxException e) {
-            logger.error("Errore nella deserializzazione del JSON: "+e.getMessage());
-            return handleGsonError(req, res);
-        }
-        if(musicToAdd == null) {
-            return handleInternalError(req, res);
-        }
-        int result = db.addManyMusic(musicToAdd);
-        if(result < 0) {
-            if(result == -1) {
-                return handleInternalError(req, res);
-            }
-        }
-
-        res.status(SC_CREATED);
-        String jsonString = formatMessage("Musica/musiche aggiunta/e con successo.",
-                SC_CREATED, SUCCESS);
         info(jsonString);
         return jsonString;
     }
@@ -343,7 +311,7 @@ public class Main {
             return handleUnsupportedMediaType(req, res);
         }
 
-        SQLiteJDBCImpl db = SQLiteJDBCImpl.getInstance();
+        PostgreSQLImpl db = PostgreSQLImpl.getInstance();
         if (db == null) {
             return handleInternalError(req, res);
         }
@@ -365,7 +333,7 @@ public class Main {
             }
             if(result == -1) {
                 res.status(SC_BAD_REQUEST);
-                String jsonString = formatMessage("Non esiste una musica con id "+musicToUpdate.getId()+", " +
+                String jsonString = formatMessage("Non esiste una musica con id "+musicToUpdate.getMusicId()+", " +
                                 "impossibile aggiornarla.", SC_BAD_REQUEST, FAILURE);
                 info(jsonString);
                 return jsonString;
@@ -373,14 +341,14 @@ public class Main {
         }
 
         res.status(SC_OK);
-        String jsonString = formatMessage("Musica con id "+musicToUpdate.getId()+" modificata con successo.",
+        String jsonString = formatMessage("Musica con id "+musicToUpdate.getMusicId()+" modificata con successo.",
                 SC_OK, SUCCESS);
         info(jsonString);
         return jsonString;
     }
 
     private static String deleteOne(Request req, Response res) {
-        SQLiteJDBCImpl db = SQLiteJDBCImpl.getInstance();
+        PostgreSQLImpl db = PostgreSQLImpl.getInstance();
         if (db == null) {
             return handleInternalError(req, res);
         }

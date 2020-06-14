@@ -1,6 +1,5 @@
 package com.gb.db.SQLiteJDBC;
 
-import com.gb.DAO.MusicDAO;
 import com.gb.modelObject.Music;
 import com.gb.modelObject.SearchFilter;
 import org.slf4j.Logger;
@@ -12,14 +11,14 @@ import java.util.List;
 
 import static com.gb.Constants.*;
 
-public class SQLiteJDBCImpl implements MusicDAO {
+public class SQLiteJDBCImpl {
 
     private static Connection conn = null;
     private static SQLiteJDBCImpl Database = null;
     private static Logger logger = LoggerFactory.getLogger(SQLiteJDBCImpl.class);
 
     private SQLiteJDBCImpl() {
-
+/*
         try {
             conn = DriverManager.getConnection(DB_PATH);
             logger.info("Database connection created successfully.");
@@ -43,6 +42,8 @@ public class SQLiteJDBCImpl implements MusicDAO {
             conn = null;
         }
 
+
+ */
     }
 
     public static synchronized SQLiteJDBCImpl getInstance() {
@@ -57,14 +58,13 @@ public class SQLiteJDBCImpl implements MusicDAO {
 
     }
 
-    @Override
     public List<Music> getAllMusic(int page) {
 
         List<Music> musicList = new ArrayList<>();
 
         String sql =
                 " SELECT * " +
-                " FROM " + TABLE_NAME +
+                " FROM " + MUSIC_TABLE +
                 " LIMIT ? OFFSET ? ";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -83,15 +83,14 @@ public class SQLiteJDBCImpl implements MusicDAO {
 
     }
 
-    @Override
     public List<Music> getMusicById(long id) {
 
         List<Music> musicList = new ArrayList<>();
 
         String sql =
                 " SELECT * " +
-                " FROM "  + TABLE_NAME +
-                " WHERE " + ID + " = ? ";
+                " FROM "  + MUSIC_TABLE +
+                " WHERE " + M_ID + " = ? ";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
@@ -108,7 +107,6 @@ public class SQLiteJDBCImpl implements MusicDAO {
 
     }
 
-    @Override
     public List<Music> getMusicByParams(SearchFilter filter, int page) {
 
         List<Music> musicList = new ArrayList<>();
@@ -116,19 +114,19 @@ public class SQLiteJDBCImpl implements MusicDAO {
         boolean[] params = new boolean[5];  /* Non serve inizializzare tutti gli elementi a false, */
         int index = 0;                      /* lo sono già di default al momento della creazione.  */
 
-        String sql = " SELECT * FROM " + TABLE_NAME + " WHERE ";
+        String sql = " SELECT * FROM " + MUSIC_TABLE + " WHERE ";
         if(filter.getTitle() != null && !filter.getTitle().equals("")) {
             sql += TITLE + " LIKE ? AND ";
             params[index] = true;
         }
         index++;
         if(filter.getAuthor() != null && !filter.getAuthor().equals("")) {
-            sql += AUTHOR + " LIKE ? AND ";
+            sql += AUTHORID + " LIKE ? AND ";
             params[index] = true;
         }
         index++;
         if(filter.getAlbum() != null && !filter.getAlbum().equals("")) {
-            sql += ALBUM + " LIKE ? AND ";
+            sql += ALBUMID + " LIKE ? AND ";
             params[index] = true;
         }
         index++;
@@ -138,7 +136,7 @@ public class SQLiteJDBCImpl implements MusicDAO {
         }
         index++;
         if(filter.getGenre() != null && !filter.getGenre().equals("")) {
-            sql += GENRE + " LIKE ? AND ";
+            sql += GENREID + " LIKE ? AND ";
             params[index] = true;
         }
         sql = sql.substring(0, sql.lastIndexOf("AND "));
@@ -184,9 +182,8 @@ public class SQLiteJDBCImpl implements MusicDAO {
 
     }
 
-    @Override
     public int addOneMusic(Music music) {
-
+        /*
         String check =
                 " SELECT COUNT(*) " +
                 " FROM "  + TABLE_NAME +
@@ -196,14 +193,14 @@ public class SQLiteJDBCImpl implements MusicDAO {
 
         try (PreparedStatement pStat = conn.prepareStatement(check)) {
 
-            pStat.setLong(1, music.getId());
+            pStat.setLong(1, music.getMusicId());
 
             try (ResultSet rs = pStat.executeQuery()) {
                 if (rs.next()) {
                     exists = rs.getInt(1) > 0;
                 }
                 if (exists) {
-                    logger.info("Esiste gia' una canzone con id {}, impossibile crearne una nuova.", music.getId());
+                    logger.info("Esiste gia' una canzone con id {}, impossibile crearne una nuova.", music.getMusicId());
                     return -1;
                 }
             }
@@ -220,7 +217,7 @@ public class SQLiteJDBCImpl implements MusicDAO {
                 "(?,?,?,?,?,?,?)";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setLong(1, music.getId());
+            ps.setLong(1, music.getMusicId());
             ps.setString(2, music.getTitle());
             ps.setString(3, music.getAuthor());
             ps.setString(4, music.getAlbum());
@@ -234,10 +231,11 @@ public class SQLiteJDBCImpl implements MusicDAO {
             return -2;
         }
 
+         */
+
         return 0;
     }
 
-    @Override
     public int addManyMusic(List<Music> musicList) {
 
         try{
@@ -266,9 +264,8 @@ public class SQLiteJDBCImpl implements MusicDAO {
         return 0;
     }
 
-    @Override
     public int updateOneMusic(Music music) {
-
+/*
         String check =
                 " SELECT COUNT(*) " +
                 " FROM "  + TABLE_NAME +
@@ -278,14 +275,14 @@ public class SQLiteJDBCImpl implements MusicDAO {
 
         try (PreparedStatement pStat = conn.prepareStatement(check)) {
 
-            pStat.setLong(1, music.getId());
+            pStat.setLong(1, music.getMusicId());
 
             try (ResultSet rs = pStat.executeQuery()) {
                 if (rs.next()) {
                     exists = rs.getInt(1) > 0;
                 }
                 if (!exists) {
-                    logger.info("La canzone con id {} non esiste, impossibile aggiornarla.", music.getId());
+                    logger.info("La canzone con id {} non esiste, impossibile aggiornarla.", music.getMusicId());
                     return -1;
                 }
             }
@@ -315,16 +312,17 @@ public class SQLiteJDBCImpl implements MusicDAO {
             return -2;
         }
 
+ */
+
         return 0;
     }
 
-    @Override
     public int deleteOneMusic(long id) {
 
         String check =
                 " SELECT COUNT(*) " +
-                " FROM "  + TABLE_NAME +
-                " WHERE " + ID + " = ? ";
+                " FROM "  + MUSIC_TABLE +
+                " WHERE " + M_ID + " = ? ";
 
         boolean exists = false;
 
@@ -347,8 +345,8 @@ public class SQLiteJDBCImpl implements MusicDAO {
         }
 
         String sql =
-                " DELETE FROM " + TABLE_NAME +
-                " WHERE " + ID  + " = ? ";
+                " DELETE FROM " + MUSIC_TABLE +
+                " WHERE " + M_ID  + " = ? ";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);

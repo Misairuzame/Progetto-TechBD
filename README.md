@@ -1,5 +1,8 @@
 # Progetto per l'esame di Tecnologie per le Basi di Dati - Backend ReST
 ![](logo.png)
+
+## WORK IN PROGRESS
+
 ## Introduzione
 Questa è la parte backend del mio progetto, e si occupa di fornire un servizio ReST.\
 Il servizio permette ai client di effettuare operazioni CRUD su una base dati di canzoni.\

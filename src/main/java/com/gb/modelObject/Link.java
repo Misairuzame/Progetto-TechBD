@@ -3,6 +3,11 @@ package com.gb.modelObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import static com.gb.Constants.*;
+
 public class Link {
 
     private Integer musicId;
@@ -11,6 +16,15 @@ public class Link {
     private static final Logger logger = LoggerFactory.getLogger(Link.class);
 
     public Link() {
+    }
+
+    public Link(ResultSet rs) {
+        try {
+            setMusicId(rs.getInt(MUSICID));
+            setLink(rs.getString(LINK));
+        } catch(SQLException e) {
+            logger.error("Error creating Group object: {}", e.getMessage());
+        }
     }
 
     public Link(Integer musicId, String link) {

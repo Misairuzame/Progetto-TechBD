@@ -3,6 +3,11 @@ package com.gb.modelObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import static com.gb.Constants.*;
+
 public class Album {
 
     private Integer albumId;
@@ -13,6 +18,17 @@ public class Album {
     private static final Logger logger = LoggerFactory.getLogger(Album.class);
 
     public Album() {
+    }
+
+    public Album(ResultSet rs) {
+        try {
+            setAlbumId(rs.getInt(ALBUMID));
+            setTitle(rs.getString(TITLE));
+            setYear(rs.getInt(YEAR));
+            setGroupId(rs.getInt(GROUPID));
+        } catch(SQLException e) {
+            logger.error("Error creating Album object: {}", e.getMessage());
+        }
     }
 
     public Album(Integer albumId, String title, Integer year, Integer groupId) {

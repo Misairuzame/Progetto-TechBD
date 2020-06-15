@@ -16,96 +16,6 @@ public class SQLiteJDBCImpl {
     private static SQLiteJDBCImpl Database = null;
     private static Logger logger = LoggerFactory.getLogger(SQLiteJDBCImpl.class);
 
-    private SQLiteJDBCImpl() {
-/*
-        try {
-            conn = DriverManager.getConnection(DB_PATH);
-            logger.info("Database connection created successfully.");
-
-            String sql =
-                    " CREATE TABLE IF NOT EXISTS "
-                    + TABLE_NAME+ " ("
-                    + ID        + " INTEGER PRIMARY KEY, "
-                    + TITLE     + " TEXT NOT NULL, "
-                    + AUTHOR    + " TEXT NOT NULL, "
-                    + ALBUM     + " TEXT NOT NULL, "
-                    + YEAR      + " INTEGER NOT NULL, "
-                    + GENRE     + " TEXT NOT NULL, "
-                    + URL       + " TEXT NOT NULL )";
-
-            try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                ps.executeUpdate();
-            }
-        } catch (SQLException e) {
-            logger.error("Exception during SQLiteJDBCImpl constructor: " + e.getMessage());
-            conn = null;
-        }
-
-
- */
-    }
-
-    public static synchronized SQLiteJDBCImpl getInstance() {
-
-        if(Database == null) {
-            Database = new SQLiteJDBCImpl();
-            if (conn == null) {
-                return null;
-            }
-        }
-        return Database;
-
-    }
-
-    public List<Music> getAllMusic(int page) {
-
-        List<Music> musicList = new ArrayList<>();
-
-        String sql =
-                " SELECT * " +
-                " FROM " + MUSIC_TABLE +
-                " LIMIT ? OFFSET ? ";
-
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1,PAGE_SIZE);
-            ps.setInt(2,page*PAGE_SIZE);
-            try (ResultSet rs = ps.executeQuery()) {
-                while(rs.next()) {
-                    musicList.add(new Music(rs));
-                }
-            }
-            return musicList;
-        } catch (SQLException e) {
-            logger.error("Error in getAllMusic: {}", e.getMessage());
-            return null;
-        }
-
-    }
-
-    public List<Music> getMusicById(long id) {
-
-        List<Music> musicList = new ArrayList<>();
-
-        String sql =
-                " SELECT * " +
-                " FROM "  + MUSIC_TABLE +
-                " WHERE " + M_ID + " = ? ";
-
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setLong(1, id);
-            try (ResultSet rs = ps.executeQuery()) {
-                if(rs.next()) {
-                    musicList.add(new Music(rs));
-                }
-            }
-            return musicList;
-        } catch (SQLException e) {
-            logger.error("Error in getMusicById: {}", e.getMessage());
-            return null;
-        }
-
-    }
-
     public int addOneMusic(Music music) {
         /*
         String check =
@@ -246,7 +156,7 @@ public class SQLiteJDBCImpl {
         String check =
                 " SELECT COUNT(*) " +
                 " FROM "  + MUSIC_TABLE +
-                " WHERE " + M_ID + " = ? ";
+                " WHERE " + MUSICID + " = ? ";
 
         boolean exists = false;
 
@@ -270,7 +180,7 @@ public class SQLiteJDBCImpl {
 
         String sql =
                 " DELETE FROM " + MUSIC_TABLE +
-                " WHERE " + M_ID  + " = ? ";
+                " WHERE " + MUSICID + " = ? ";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);

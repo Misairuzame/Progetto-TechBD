@@ -8,6 +8,8 @@ public interface GroupDAO {
 
     List<Group> getAllGroups();
 
+    Group getGroupById(int groupId);
+
     int insertGroup(Group group);
 
 }

@@ -1,11 +1,12 @@
 package com.gb.modelObject;
 
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import static com.gb.Constants.*;
 
 public class Music {
 
@@ -22,12 +23,12 @@ public class Music {
 
     public Music(ResultSet rs) {
         try {
-            setMusicId(rs.getInt(1));
-            setTitle(rs.getString(2));
-            setAuthorId(rs.getInt(3));
-            setAlbumId(rs.getInt(4));
-            setYear(rs.getInt(5));
-            setGenreId(rs.getInt(6));
+            setMusicId(rs.getInt(MUSICID));
+            setTitle(rs.getString(TITLE));
+            setAuthorId(rs.getInt(AUTHORID));
+            setAlbumId(rs.getInt(ALBUMID));
+            setYear(rs.getInt(YEAR));
+            setGenreId(rs.getInt(GENREID));
         } catch(SQLException e) {
             logger.error("Error creating Music object: {}", e.getMessage());
         }
@@ -89,22 +90,5 @@ public class Music {
     public void setGenreId(Integer genreId) {
         this.genreId = genreId;
     }
-
-    public JSONObject getJson() {
-        /*
-        TODO
-        return new JSONObject()
-                .put("id", getId())
-                .put("title", getTitle())
-                .put("author", getAuthor())
-                .put("album", getAlbum())
-                .put("year", getYear())
-                .put("genre", getGenre())
-                .put("url", getUrl());
-         */
-        return null;
-    }
-
-
 
 }

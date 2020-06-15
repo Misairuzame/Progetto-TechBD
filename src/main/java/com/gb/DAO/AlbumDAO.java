@@ -8,6 +8,8 @@ public interface AlbumDAO {
 
     List<Album> getAllAlbums();
 
+    Album getAlbumById(int albumId);
+
     int deleteAlbum(int albumId);
 
     int insertAlbum(Album album);

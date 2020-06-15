@@ -2,7 +2,7 @@ package com.gb.restApp;
 
 import static spark.Spark.*;
 import com.gb.db.PostgreSQLImpl.PostgreSQLImpl;
-import com.gb.modelObject.Music;
+import com.gb.modelObject.*;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Closeables;
 import org.slf4j.Logger;
@@ -11,12 +11,10 @@ import spark.ModelAndView;
 import spark.Request;
 import spark.Response;
 import spark.template.thymeleaf.ThymeleafTemplateEngine;
-
 import java.io.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import static org.apache.http.HttpStatus.*;
 import static javax.ws.rs.core.MediaType.*;
 import static com.gb.Constants.*;
@@ -53,15 +51,38 @@ public class Main {
         path("/music", () -> {
             get("",  Main::getMusic);
 
-            post("",  Main::addOne);
-            post("/", Main::addOne);
+            get(":id", Main::getMusicById);
+            get("/:id", Main::getMusicById);
 
-            delete("",  Main::deleteAll);
-            delete("/", Main::deleteAll);
+            post("",  Main::addMusic);
+            post("/", Main::addMusic);
 
-            put("/:id", Main::updateOne);
+            delete("",  Main::deleteAllMusic);
+            delete("/", Main::deleteAllMusic);
 
-            delete("/:id", Main::deleteOne);
+            put("/:id", Main::updateMusic);
+
+            delete("/:id", Main::deleteMusic);
+        });
+
+        path("/album", () -> {
+            get("",  Main::getAlbums);
+        });
+
+        path("/artist", () -> {
+            get("",  Main::getArtists);
+        });
+
+        path("/group", () -> {
+            get("",  Main::getGroups);
+        });
+
+        path("/genre", () -> {
+            get("",  Main::getGenres);
+        });
+
+        path("/link", () -> {
+            get("",  Main::getLinks);
         });
 
         get("/favicon.ico", Main::favicon);
@@ -159,7 +180,7 @@ public class Main {
 
     private static String handleUnsupportedMediaType(Request req, Response res) {
         return returnMessage(req, res, SC_UNSUPPORTED_MEDIA_TYPE, "text-danger",
-                "Il media type specificato non e' supportato.");
+                "Il media type specificato non &egrave; supportato.");
     }
 
     private static String handleParseError(Request req, Response res) {
@@ -186,8 +207,7 @@ public class Main {
 
         if(req.queryParams("page") != null) {
             if(!isNumber(req.queryParams("page"))) {
-                return returnMessage(req, res, SC_BAD_REQUEST, "text-danger",
-                        "Specificare la pagina in maniera corretta.");
+                return handleParseError(req, res);
             } else {
                 pageNum = Integer.parseInt(req.queryParams("page"));
             }
@@ -207,10 +227,43 @@ public class Main {
 
         Map<String, Object> model = new HashMap<>();
         model.put("musicList", musicList);
+        model.put("page", pageNum);
         return engine.render(new ModelAndView(model, "musicList"));
     }
 
-    private static String addOne(Request req, Response res) {
+    private static String getMusicById(Request req, Response res) {
+        PostgreSQLImpl db = PostgreSQLImpl.getInstance();
+        if (db == null) {
+            return handleInternalError(req, res);
+        }
+
+        int musicId;
+        try {
+            musicId = Integer.parseInt(req.params("id"));
+        } catch (NumberFormatException e) {
+            logger.error("Errore durante il parsing dell'id "+req.params("id"));
+            return handleParseError(req, res);
+        }
+
+        List<Music> musicList = db.getMusicById(musicId);
+        if (musicList == null) {
+            return handleInternalError(req, res);
+        }
+        if (musicList.isEmpty()) {
+            return handleNotFound(req, res);
+        }
+
+        res.status(SC_OK);
+
+        info(musicList.toString());
+
+        Map<String, Object> model = new HashMap<>();
+        model.put("musicList", musicList);
+        model.put("page", -100);
+        return engine.render(new ModelAndView(model, "musicList"));
+    }
+
+    private static String addMusic(Request req, Response res) {
         if(req.contentType() == null || !req.contentType().equals(TEXT_HTML)) {
             return handleUnsupportedMediaType(req, res);
         }
@@ -241,7 +294,7 @@ public class Main {
                 "Musica con id "+musicToAdd.getMusicId()+" aggiunta con successo.");
     }
 
-    private static String updateOne(Request req, Response res) {
+    private static String updateMusic(Request req, Response res) {
         if(req.contentType() == null || !req.contentType().equals(TEXT_HTML)) {
             return handleUnsupportedMediaType(req, res);
         }
@@ -251,16 +304,17 @@ public class Main {
             return handleInternalError(req, res);
         }
 
-        Music musicToUpdate;
+        Music musicToUpdate = new Music();
         Music musicToAdd = new Music();
         try {
             //TODO: aggiungere deserializzazione parametri HTML
         } catch (NumberFormatException e) {
             //TODO: restituire messaggio danger
-        } catch(JsonSyntaxException e) {
+        } /*catch(JsonSyntaxException e) {
             logger.error("Errore nella deserializzazione del JSON: "+e.getMessage());
             return handleParseError(req, res);
         }
+        */
         if(musicToUpdate == null) {
             return handleInternalError(req, res);
         }
@@ -280,7 +334,7 @@ public class Main {
                 "Musica con id "+musicToUpdate.getMusicId()+" modificata con successo.");
     }
 
-    private static String deleteOne(Request req, Response res) {
+    private static String deleteMusic(Request req, Response res) {
         PostgreSQLImpl db = PostgreSQLImpl.getInstance();
         if (db == null) {
             return handleInternalError(req, res);
@@ -309,9 +363,124 @@ public class Main {
 
     }
 
-    private static String deleteAll(Request req, Response res) {
+    private static String deleteAllMusic(Request req, Response res) {
         return returnMessage(req, res, SC_FORBIDDEN, "text-danger",
                 "L'eliminazione dell'intera collezione e' vietata.");
+    }
+
+    private static String getAlbums(Request req, Response res) {
+        PostgreSQLImpl db = PostgreSQLImpl.getInstance();
+        if (db == null) {
+            return handleInternalError(req, res);
+        }
+
+        List<Album> albumList = db.getAllAlbums();
+        if (albumList == null) {
+            return handleInternalError(req, res);
+        }
+        if (albumList.isEmpty()) {
+            return handleNotFound(req, res);
+        }
+
+        res.status(SC_OK);
+
+        info(albumList.toString());
+
+        Map<String, Object> model = new HashMap<>();
+        model.put("albumList", albumList);
+        return engine.render(new ModelAndView(model, "albumList"));
+    }
+
+    private static String getArtists(Request req, Response res) {
+        PostgreSQLImpl db = PostgreSQLImpl.getInstance();
+        if (db == null) {
+            return handleInternalError(req, res);
+        }
+
+        List<Artist> artistList = db.getAllArtists();
+        if (artistList == null) {
+            return handleInternalError(req, res);
+        }
+        if (artistList.isEmpty()) {
+            return handleNotFound(req, res);
+        }
+
+        res.status(SC_OK);
+
+        info(artistList.toString());
+
+        Map<String, Object> model = new HashMap<>();
+        model.put("artistList", artistList);
+        return engine.render(new ModelAndView(model, "artistList"));
+    }
+
+    private static String getGroups(Request req, Response res) {
+        PostgreSQLImpl db = PostgreSQLImpl.getInstance();
+        if (db == null) {
+            return handleInternalError(req, res);
+        }
+
+        List<Group> groupList = db.getAllGroups();
+        if (groupList == null) {
+            return handleInternalError(req, res);
+        }
+        if (groupList.isEmpty()) {
+            return handleNotFound(req, res);
+        }
+
+        res.status(SC_OK);
+
+        info(groupList.toString());
+
+        Map<String, Object> model = new HashMap<>();
+        model.put("groupList", groupList);
+        return engine.render(new ModelAndView(model, "groupList"));
+    }
+
+    private static String getGenres(Request req, Response res) {
+        PostgreSQLImpl db = PostgreSQLImpl.getInstance();
+        if (db == null) {
+            return handleInternalError(req, res);
+        }
+
+        List<Genre> genreList = db.getAllGenres();
+        if (genreList == null) {
+            return handleInternalError(req, res);
+        }
+        if (genreList.isEmpty()) {
+            return handleNotFound(req, res);
+        }
+
+        res.status(SC_OK);
+
+        info(genreList.toString());
+
+        Map<String, Object> model = new HashMap<>();
+        model.put("genreList", genreList);
+        return engine.render(new ModelAndView(model, "genreList"));
+    }
+
+    private static String getLinks(Request req, Response res) {
+        PostgreSQLImpl db = PostgreSQLImpl.getInstance();
+        if (db == null) {
+            return handleInternalError(req, res);
+        }
+
+        List<Link> linkList = db.getAllLinks();
+        if (linkList == null) {
+            return handleInternalError(req, res);
+        }
+        if (linkList.isEmpty()) {
+            return handleNotFound(req, res);
+        }
+
+        res.status(SC_OK);
+
+        info(linkList.toString());
+
+        Map<String, Object> model = new HashMap<>();
+        model.put("linkList", linkList);
+        return engine.render(new ModelAndView(model, "linkList"));
     }
 
     /**

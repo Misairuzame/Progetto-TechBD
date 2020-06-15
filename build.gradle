@@ -16,7 +16,6 @@ dependencies {
     implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.+'
     implementation 'org.apache.httpcomponents:httpclient:4.5.+'
     implementation group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.1.1'
-    implementation group: 'org.json', name: 'json', version: '20190722'
     implementation group: 'org.postgresql', name: 'postgresql', version: '42.2.14'
     implementation group: 'com.sparkjava', name: 'spark-template-thymeleaf', version: '2.7.1'
     implementation group: 'com.google.guava', name: 'guava-io', version: 'r03'

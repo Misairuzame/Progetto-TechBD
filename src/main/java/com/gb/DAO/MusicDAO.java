@@ -8,6 +8,8 @@ public interface MusicDAO {
 
     List<Music> getAllMusic(int page);
 
+    List<Music> getMusicById(int musicId);
+
     int updateMusic(Music music);
 
     int insertMusic(Music music);

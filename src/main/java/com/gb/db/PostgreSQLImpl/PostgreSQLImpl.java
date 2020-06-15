@@ -63,12 +63,8 @@ public class PostgreSQLImpl implements MusicDAO, AlbumDAO, ArtistDAO, GroupDAO, 
 
     }
 
-    public static void main(String[] args) {
-        logger.debug("Connection test");
-        PostgreSQLImpl test = new PostgreSQLImpl();
-    }
-
     @Override
+    /* Done */
     public List<Music> getAllMusic(int page) {
 
         List<Music> musicList = new ArrayList<>();
@@ -95,6 +91,30 @@ public class PostgreSQLImpl implements MusicDAO, AlbumDAO, ArtistDAO, GroupDAO, 
     }
 
     @Override
+    /* Done */
+    public List<Music> getMusicById(int musicId) {
+        List<Music> musicList = new ArrayList<>();
+
+        String sql =
+                " SELECT * " +
+                " FROM "  + MUSIC_TABLE +
+                " WHERE " + MUSICID + " = ? ";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, musicId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if(rs.next()) {
+                    musicList.add(new Music(rs));
+                }
+            }
+            return musicList;
+        } catch (SQLException e) {
+            logger.error("Error in getMusicById: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    @Override
     public List<Music> getMusicJoinAll(long id) {
         return null;
     }
@@ -115,7 +135,29 @@ public class PostgreSQLImpl implements MusicDAO, AlbumDAO, ArtistDAO, GroupDAO, 
     }
 
     @Override
+    /* Done */
     public List<Album> getAllAlbums() {
+        List<Album> albumList = new ArrayList<>();
+
+        String sql =
+                " SELECT * " +
+                " FROM "  + ALBUM_TABLE;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            try (ResultSet rs = ps.executeQuery()) {
+                while(rs.next()) {
+                    albumList.add(new Album(rs));
+                }
+            }
+            return albumList;
+        } catch (SQLException e) {
+            logger.error("Error in getAllAlbums: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    @Override
+    public Album getAlbumById(int albumId) {
         return null;
     }
 
@@ -135,8 +177,25 @@ public class PostgreSQLImpl implements MusicDAO, AlbumDAO, ArtistDAO, GroupDAO, 
     }
 
     @Override
+    /* Done */
     public List<Artist> getAllArtists() {
-        return null;
+        List<Artist> artistList = new ArrayList<>();
+
+        String sql =
+                " SELECT * " +
+                " FROM "  + ARTIST_TABLE;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            try (ResultSet rs = ps.executeQuery()) {
+                while(rs.next()) {
+                    artistList.add(new Artist(rs));
+                }
+            }
+            return artistList;
+        } catch (SQLException e) {
+            logger.error("Error in getAllArtists: {}", e.getMessage());
+            return null;
+        }
     }
 
     @Override
@@ -150,7 +209,29 @@ public class PostgreSQLImpl implements MusicDAO, AlbumDAO, ArtistDAO, GroupDAO, 
     }
 
     @Override
+    /* Done */
     public List<Genre> getAllGenres() {
+        List<Genre> genreList = new ArrayList<>();
+
+        String sql =
+                " SELECT * " +
+                " FROM "  + GENRE_TABLE;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            try (ResultSet rs = ps.executeQuery()) {
+                while(rs.next()) {
+                    genreList.add(new Genre(rs));
+                }
+            }
+            return genreList;
+        } catch (SQLException e) {
+            logger.error("Error in getAllGenres: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    @Override
+    public Genre getGenreById(int genreId) {
         return null;
     }
 
@@ -160,7 +241,29 @@ public class PostgreSQLImpl implements MusicDAO, AlbumDAO, ArtistDAO, GroupDAO, 
     }
 
     @Override
+    /* Done */
     public List<Group> getAllGroups() {
+        List<Group> groupList = new ArrayList<>();
+
+        String sql =
+                " SELECT * " +
+                " FROM "  + GROUP_TABLE;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            try (ResultSet rs = ps.executeQuery()) {
+                while(rs.next()) {
+                    groupList.add(new Group(rs));
+                }
+            }
+            return groupList;
+        } catch (SQLException e) {
+            logger.error("Error in getAllGroups: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    @Override
+    public Group getGroupById(int groupId) {
         return null;
     }
 
@@ -170,7 +273,25 @@ public class PostgreSQLImpl implements MusicDAO, AlbumDAO, ArtistDAO, GroupDAO, 
     }
 
     @Override
+    /* Done */
     public List<Link> getAllLinks() {
-        return null;
+        List<Link> linkList = new ArrayList<>();
+
+        String sql =
+                " SELECT * " +
+                " FROM "  + LINK_TABLE;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            try (ResultSet rs = ps.executeQuery()) {
+                while(rs.next()) {
+                    linkList.add(new Link(rs));
+                }
+            }
+            return linkList;
+        } catch (SQLException e) {
+            logger.error("Error in getAllLinks: {}", e.getMessage());
+            return null;
+        }
     }
+
 }

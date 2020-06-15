@@ -3,6 +3,11 @@ package com.gb.modelObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import static com.gb.Constants.*;
+
 public class Genre {
 
     private Integer genreId;
@@ -11,6 +16,15 @@ public class Genre {
     private static final Logger logger = LoggerFactory.getLogger(Genre.class);
 
     public Genre() {
+    }
+
+    public Genre(ResultSet rs) {
+        try {
+            setGenreId(rs.getInt(GENREID));
+            setName(rs.getString(NAME));
+        } catch(SQLException e) {
+            logger.error("Error creating Genre object: {}", e.getMessage());
+        }
     }
 
     public Genre(Integer genreId, String name) {

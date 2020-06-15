@@ -24,6 +24,18 @@
         </tbody>
     </table>
 
-<div th:replace="footer"/>
+<div th:if="${page != -100}">
+<p class="lead text-light" th:text="'Pagina ' + ${page}+'.'"/>
 
-<!-- TODO: Aggiungere paginazione -->
+<form class="form-inline" method="get">
+    <button type="submit" class="btn btn-primary mb-2" name="page"
+            th:classappend="(${page == 0}) ? ('disabled')"
+            th:disabled="(${page == 0}) ? ('disabled')"
+            th:style="(${page == 0}) ? ('cursor: not-allowed;')"
+            th:value="${page-1}">Pagina precedente</button>
+    <button type="submit" class="btn btn-primary mb-2" name="page"
+            th:value="${page+1}">Pagina successiva</button>
+</form>
+</div>
+
+<div th:replace="footer"/>

@@ -8,20 +8,24 @@ import com.google.common.io.ByteStreams;
 import com.google.common.io.Closeables;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import com.google.gson.reflect.TypeToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import spark.ModelAndView;
 import spark.Request;
 import spark.Response;
+import spark.template.thymeleaf.ThymeleafTemplateEngine;
+
 import java.io.*;
-import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import static org.apache.http.HttpStatus.*;
 import static javax.ws.rs.core.MediaType.*;
 import static com.gb.Constants.*;
 import static com.gb.utils.JSONUtils.*;
 import static com.gb.utils.UtilFunctions.*;
-import static com.gb.utils.HTMLFormatter.*;
+
 /**
  * Documentazione per le costanti rappresentanti gli stati HTTP, fornite da Apache HTTP:
  * http://hc.apache.org/httpcomponents-core-ga/httpcore/apidocs/org/apache/http/HttpStatus.html
@@ -37,6 +41,8 @@ public class Main {
     private static void info(String toLog) {
         logger.info("Returned the following JSON:\n{}", toLog);
     }
+
+    private static final ThymeleafTemplateEngine engine = new ThymeleafTemplateEngine();
 
     public static void main(String[] args) {
 
@@ -109,9 +115,11 @@ public class Main {
         }
 
         /**
-         * Mette il content-type della Response a "application/json"
+         * Mette il content-type della Response a "text/html"
          */
         res.raw().setContentType(TEXT_HTML);
+
+        res.raw().setCharacterEncoding("UTF-8");
 
         /**
          * Logga la Request
@@ -173,7 +181,9 @@ public class Main {
         String jsonString = formatMessage("Benvenuto nella ReST API MusicService.",
                 SC_OK, SUCCESS);
         info(jsonString);
-        return jsonString;
+        Map model = new HashMap<>();
+        model.put("welcometext", "Benvenuto nella ReST API MusicService.");
+        return engine.render(new ModelAndView(model, "home"));
     }
 
     private static String getMusic(Request req, Response res) {
@@ -229,12 +239,13 @@ public class Main {
         } else msg = "Lista contenente musica sul database (pagina "+pageNum+").";
 
         res.status(SC_OK);
-        /*
+
         String jsonString = formatMusic(musicList, SC_OK, SUCCESS, msg);
         info(jsonString);
-        return jsonString;
-         */
-        return FormatMusic(musicList);
+
+        Map<String, Object> model = new HashMap<>();
+        model.put("musicList", musicList);
+        return engine.render(new ModelAndView(model, "musicList"));
     }
 
     private static String getMusicById(Request req, Response res) {
@@ -285,7 +296,7 @@ public class Main {
         if(musicToAdd == null) {
             return handleInternalError(req, res);
         }
-        int result = db.addOneMusic(musicToAdd);
+        int result = db.insertMusic(musicToAdd);
         if(result < 0) {
             if(result == -2) {
                 return handleInternalError(req, res);
@@ -362,7 +373,7 @@ public class Main {
         }
 
         long musicId = Long.parseLong(req.params("id"));
-        int result = db.deleteOneMusic(musicId);
+        int result = db.deleteMusic(musicId);
         if(result < 0) {
             if(result == -2) {
                 return handleInternalError(req, res);

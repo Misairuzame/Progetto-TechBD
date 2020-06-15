@@ -17,9 +17,9 @@ public class HTMLFormatter {
             "</div></tbody></table></body></html>";
 
     private static void Itemize(StringBuilder sb, String content) {
-        sb.append("<th>");
+        sb.append("<td>");
         sb.append(content);
-        sb.append("</th>");
+        sb.append("</td>");
     }
 
     /**

@@ -205,7 +205,7 @@ public class SQLiteJDBCImpl {
                 }
             }
         } catch (SQLException e) {
-            logger.error("Exception in addOneMusic: " + e.getMessage());
+            logger.error("Exception in insertMusic: " + e.getMessage());
             return -2;
         }
 
@@ -227,7 +227,7 @@ public class SQLiteJDBCImpl {
 
             ps.executeUpdate();
         } catch (SQLException e) {
-            logger.error("Exception in addOneMusic: " + e.getMessage());
+            logger.error("Exception in insertMusic: " + e.getMessage());
             return -2;
         }
 
@@ -242,7 +242,7 @@ public class SQLiteJDBCImpl {
             conn.setAutoCommit(false);
             for(Music music : musicList) {
                 if(addOneMusic(music) < 0) {
-                    throw new SQLException("Errore in addManyMusic interno a addOneMusic.");
+                    throw new SQLException("Errore in addManyMusic interno a insertMusic.");
                 }
             }
             conn.commit();

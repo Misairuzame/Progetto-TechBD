@@ -116,12 +116,12 @@ public class PostgreSQLImpl implements MusicDAO {
     }
 
     @Override
-    public int addOneMusic(Music music) {
+    public int insertMusic(Music music) {
         return 0;
     }
 
     @Override
-    public int deleteOneMusic(long id) {
+    public int deleteMusic(int id) {
         return 0;
     }
 }

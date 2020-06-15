@@ -42,12 +42,12 @@ public interface MusicDAO {
      * POST /music
      * POST su collezione --> Inserisce un elemento nella collezione
      */
-    int addOneMusic(Music music);
+    int insertMusic(Music music);
 
     /**
      * DELETE /music/:id
      * DELETE su risorsa --> Elimina la risorsa
      */
-    int deleteOneMusic(long id);
+    int deleteMusic(int id);
 
 }

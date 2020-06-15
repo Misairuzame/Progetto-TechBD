@@ -3,11 +3,8 @@ package com.gb.restApp;
 import static spark.Spark.*;
 import com.gb.db.PostgreSQLImpl.PostgreSQLImpl;
 import com.gb.modelObject.Music;
-import com.gb.modelObject.SearchFilter;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Closeables;
-import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.ModelAndView;
@@ -23,7 +20,6 @@ import java.util.Map;
 import static org.apache.http.HttpStatus.*;
 import static javax.ws.rs.core.MediaType.*;
 import static com.gb.Constants.*;
-import static com.gb.utils.JSONUtils.*;
 import static com.gb.utils.UtilFunctions.*;
 
 /**
@@ -39,7 +35,7 @@ public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     private static void info(String toLog) {
-        logger.info("Returned the following JSON:\n{}", toLog);
+        logger.info("Returned: {}", toLog);
     }
 
     private static final ThymeleafTemplateEngine engine = new ThymeleafTemplateEngine();
@@ -62,8 +58,6 @@ public class Main {
 
             delete("",  Main::deleteAll);
             delete("/", Main::deleteAll);
-
-            get("/:id", Main::getMusicById);
 
             put("/:id", Main::updateOne);
 
@@ -144,45 +138,41 @@ public class Main {
         logger.info(text.toString());
     }
 
+    private static String returnMessage(Request req, Response res, int httpStatus, String messageType, String messageText) {
+        res.status(httpStatus);
+        info(messageText);
+        Map<String, String> model = new HashMap<>();
+        model.put("messagetype", messageType);
+        model.put("messagetext", messageText);
+        return engine.render(new ModelAndView(model, "message"));
+    }
+
     private static String handleNotFound(Request req, Response res) {
-        res.status(SC_NOT_FOUND);
-        String jsonString = formatMessage("Risorsa o collezione non trovata.",
-                SC_NOT_FOUND, FAILURE);
-        info(jsonString);
-        return jsonString;
+        return returnMessage(req, res, SC_NOT_FOUND, "text-warning",
+                "Risorsa o collezione non trovata.");
     }
 
     private static String handleInternalError(Request req, Response res) {
-        res.status(SC_INTERNAL_SERVER_ERROR);
-        String jsonString = formatMessage("Si e' verificato un errore.",
-                SC_INTERNAL_SERVER_ERROR, FAILURE);
-        info(jsonString);
-        return jsonString;
+        return returnMessage(req, res, SC_INTERNAL_SERVER_ERROR, "text-danger",
+                "Si e' verificato un errore.");
     }
 
     private static String handleUnsupportedMediaType(Request req, Response res) {
-        res.status(SC_UNSUPPORTED_MEDIA_TYPE);
-        String jsonString = formatMessage("Il media type specificato non e' supportato.",
-                SC_UNSUPPORTED_MEDIA_TYPE, FAILURE);
-        info(jsonString);
-        return jsonString;
+        return returnMessage(req, res, SC_UNSUPPORTED_MEDIA_TYPE, "text-danger",
+                "Il media type specificato non e' supportato.");
     }
 
-    private static String handleGsonError(Request req, Response res) {
-        res.status(SC_BAD_REQUEST);
-        String jsonString = formatMessage("Errore nella deserializzazione del JSON inviato.",
-                SC_BAD_REQUEST, FAILURE);
-        info(jsonString);
-        return jsonString;
+    private static String handleParseError(Request req, Response res) {
+        return returnMessage(req, res, SC_BAD_REQUEST, "text-danger",
+                "Errore nella deserializzazione dei parametri inviati.");
     }
 
     private static String getHomepage(Request req, Response res) {
         res.status(SC_OK);
-        String jsonString = formatMessage("Benvenuto nella ReST API MusicService.",
-                SC_OK, SUCCESS);
-        info(jsonString);
-        Map model = new HashMap<>();
-        model.put("welcometext", "Benvenuto nella ReST API MusicService.");
+        String message = "Benvenuto nella ReST API MusicService.";
+        info(message);
+        Map<String, String> model = new HashMap<>();
+        model.put("welcometext", message);
         return engine.render(new ModelAndView(model, "home"));
     }
 
@@ -196,88 +186,32 @@ public class Main {
 
         if(req.queryParams("page") != null) {
             if(!isNumber(req.queryParams("page"))) {
-                res.status(SC_BAD_REQUEST);
-                String jsonString = formatMessage("Specificare la pagina in maniera corretta.",
-                        SC_BAD_REQUEST, FAILURE);
-                info(jsonString);
-                return jsonString;
+                return returnMessage(req, res, SC_BAD_REQUEST, "text-danger",
+                        "Specificare la pagina in maniera corretta.");
             } else {
                 pageNum = Integer.parseInt(req.queryParams("page"));
             }
         }
 
-        /**
-         * Parte di codice che permette di cercare musica
-         * secondo diversi parametri
-         */
-        boolean hasTitle = req.queryParams("title") != null;
-        boolean hasAuthor = req.queryParams("author") != null;
-        boolean hasAlbum = req.queryParams("album") != null;
-        boolean hasYear = req.queryParams("year") != null;
-        boolean hasGenre = req.queryParams("genre") != null;
-        List<Music> musicList;
-        if( hasTitle || hasAuthor || hasAlbum ||
-            hasYear  || hasGenre) {
-            SearchFilter filter = new SearchFilter();
-            filter.setTitle(req.queryParams("title"));
-            filter.setAuthor(req.queryParams("author"));
-            filter.setAlbum(req.queryParams("album"));
-            filter.setYear(req.queryParams("year"));
-            filter.setGenre(req.queryParams("genre"));
-
-            musicList = db.getMusicByParams(filter, pageNum);
-        } else {
-            musicList = db.getAllMusic(pageNum);
-        }
+        List<Music> musicList = db.getAllMusic(pageNum);
         if (musicList == null) {
             return handleInternalError(req, res);
         }
-
-        String msg;
         if (musicList.isEmpty()) {
             return handleNotFound(req, res);
-        } else msg = "Lista contenente musica sul database (pagina "+pageNum+").";
+        }
 
         res.status(SC_OK);
 
-        String jsonString = formatMusic(musicList, SC_OK, SUCCESS, msg);
-        info(jsonString);
+        info(musicList.toString());
 
         Map<String, Object> model = new HashMap<>();
         model.put("musicList", musicList);
         return engine.render(new ModelAndView(model, "musicList"));
     }
 
-    private static String getMusicById(Request req, Response res) {
-        PostgreSQLImpl db = PostgreSQLImpl.getInstance();
-        if (db == null) {
-            return handleInternalError(req, res);
-        }
-
-        if(req.params("id") == null || !isNumber(req.params("id"))) {
-            res.status(SC_BAD_REQUEST);
-            String jsonString = formatMessage("Specificare un id nel formato corretto.",
-                    SC_BAD_REQUEST, FAILURE);
-            info(jsonString);
-            return jsonString;
-        }
-
-        long musicId = Long.parseLong(req.params("id"));
-        List<Music> musicList = db.getMusicById(musicId);
-        if (musicList == null) {
-            return handleInternalError(req, res);
-        }
-        if (musicList.isEmpty()) {
-            return handleNotFound(req, res);
-        }
-        res.status(SC_OK);
-        String jsonString = formatMusic(musicList, SC_OK, SUCCESS, "Musica con id " + musicId + ".");
-        info(jsonString);
-        return jsonString;
-    }
-
     private static String addOne(Request req, Response res) {
-        if(req.contentType() == null || !req.contentType().equals(APPLICATION_JSON)) {
+        if(req.contentType() == null || !req.contentType().equals(TEXT_HTML)) {
             return handleUnsupportedMediaType(req, res);
         }
 
@@ -286,15 +220,11 @@ public class Main {
             return handleInternalError(req, res);
         }
 
-        Music musicToAdd;
+        Music musicToAdd = new Music();
         try {
-            musicToAdd = new Gson().fromJson(req.body(), Music.class);
-        } catch(JsonSyntaxException e) {
-            logger.error("Errore nella deserializzazione del JSON: "+e.getMessage());
-            return handleGsonError(req, res);
-        }
-        if(musicToAdd == null) {
-            return handleInternalError(req, res);
+            //TODO: aggiungere deserializzazione parametri HTML
+        } catch (NumberFormatException e) {
+            //TODO: restituire messaggio danger
         }
         int result = db.insertMusic(musicToAdd);
         if(result < 0) {
@@ -302,23 +232,17 @@ public class Main {
                 return handleInternalError(req, res);
             }
             if(result == -1) {
-                res.status(SC_CONFLICT);
-                String jsonString = formatMessage("Esiste gia' una musica con id "+musicToAdd.getMusicId()+".",
-                        SC_CONFLICT, FAILURE);
-                info(jsonString);
-                return jsonString;
+                return returnMessage(req, res, SC_CONFLICT, "text-warning",
+                        "Esiste già una musica con id "+musicToAdd.getMusicId()+".");
             }
         }
 
-        res.status(SC_CREATED);
-        String jsonString = formatMessage("Musica con id "+musicToAdd.getMusicId()+" aggiunta con successo.",
-                    SC_CREATED, SUCCESS);
-        info(jsonString);
-        return jsonString;
+        return returnMessage(req, res, SC_CREATED, "text-success",
+                "Musica con id "+musicToAdd.getMusicId()+" aggiunta con successo.");
     }
 
     private static String updateOne(Request req, Response res) {
-        if(req.contentType() == null || !req.contentType().equals(APPLICATION_JSON)) {
+        if(req.contentType() == null || !req.contentType().equals(TEXT_HTML)) {
             return handleUnsupportedMediaType(req, res);
         }
 
@@ -328,34 +252,32 @@ public class Main {
         }
 
         Music musicToUpdate;
+        Music musicToAdd = new Music();
         try {
-            musicToUpdate = new Gson().fromJson(req.body(), Music.class);
+            //TODO: aggiungere deserializzazione parametri HTML
+        } catch (NumberFormatException e) {
+            //TODO: restituire messaggio danger
         } catch(JsonSyntaxException e) {
             logger.error("Errore nella deserializzazione del JSON: "+e.getMessage());
-            return handleGsonError(req, res);
+            return handleParseError(req, res);
         }
         if(musicToUpdate == null) {
             return handleInternalError(req, res);
         }
-        int result = db.updateOneMusic(musicToUpdate);
+        int result = db.updateMusic(musicToUpdate);
         if(result < 0) {
             if(result == -2) {
                 return handleInternalError(req, res);
             }
             if(result == -1) {
-                res.status(SC_BAD_REQUEST);
-                String jsonString = formatMessage("Non esiste una musica con id "+musicToUpdate.getMusicId()+", " +
-                                "impossibile aggiornarla.", SC_BAD_REQUEST, FAILURE);
-                info(jsonString);
-                return jsonString;
+                return returnMessage(req, res, SC_BAD_REQUEST, "text-warning",
+                        "Non esiste una musica con id "+musicToUpdate.getMusicId()+", " +
+                                "impossibile aggiornarla.");
             }
         }
 
-        res.status(SC_OK);
-        String jsonString = formatMessage("Musica con id "+musicToUpdate.getMusicId()+" modificata con successo.",
-                SC_OK, SUCCESS);
-        info(jsonString);
-        return jsonString;
+        return returnMessage(req, res, SC_OK, "text-success",
+                "Musica con id "+musicToUpdate.getMusicId()+" modificata con successo.");
     }
 
     private static String deleteOne(Request req, Response res) {
@@ -365,42 +287,31 @@ public class Main {
         }
 
         if(req.params("id") == null || !isNumber(req.params("id"))) {
-            res.status(SC_BAD_REQUEST);
-            String jsonString = formatMessage("Specificare un id nel formato corretto.",
-                    SC_BAD_REQUEST, FAILURE);
-            info(jsonString);
-            return jsonString;
+            return returnMessage(req, res, SC_BAD_REQUEST, "text-danger",
+                    "Specificare un id nel formato corretto.");
         }
 
-        long musicId = Long.parseLong(req.params("id"));
+        int musicId = Integer.parseInt(req.params("id"));
         int result = db.deleteMusic(musicId);
         if(result < 0) {
             if(result == -2) {
                 return handleInternalError(req, res);
             }
             if(result == -1) {
-                res.status(SC_BAD_REQUEST);
-                String jsonString = formatMessage("Non esiste una musica con id "+musicId+", " +
-                        "impossibile eliminarla.", SC_BAD_REQUEST, FAILURE);
-                info(jsonString);
-                return jsonString;
+                return returnMessage(req, res, SC_BAD_REQUEST, "text-warning",
+                        "Non esiste una musica con id "+musicId+", " +
+                        "impossibile eliminarla.");
             }
         }
 
-        res.status(SC_OK);
-        String jsonString = formatMessage("Musica con id "+musicId+" eliminata con successo.",
-                SC_OK, SUCCESS);
-        info(jsonString);
-        return jsonString;
+        return returnMessage(req, res, SC_OK, "text-success",
+                "Musica con id "+musicId+" eliminata con successo.");
 
     }
 
     private static String deleteAll(Request req, Response res) {
-        res.status(SC_FORBIDDEN);
-        String jsonString = formatMessage("L'eliminazione dell'intera collezione e' vietata.",
-                SC_FORBIDDEN, SUCCESS);
-        info(jsonString);
-        return jsonString;
+        return returnMessage(req, res, SC_FORBIDDEN, "text-danger",
+                "L'eliminazione dell'intera collezione e' vietata.");
     }
 
     /**

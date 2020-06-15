@@ -1,7 +1,6 @@
 package com.gb.db.SQLiteJDBC;
 
 import com.gb.modelObject.Music;
-import com.gb.modelObject.SearchFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,81 +101,6 @@ public class SQLiteJDBCImpl {
             return musicList;
         } catch (SQLException e) {
             logger.error("Error in getMusicById: {}", e.getMessage());
-            return null;
-        }
-
-    }
-
-    public List<Music> getMusicByParams(SearchFilter filter, int page) {
-
-        List<Music> musicList = new ArrayList<>();
-
-        boolean[] params = new boolean[5];  /* Non serve inizializzare tutti gli elementi a false, */
-        int index = 0;                      /* lo sono già di default al momento della creazione.  */
-
-        String sql = " SELECT * FROM " + MUSIC_TABLE + " WHERE ";
-        if(filter.getTitle() != null && !filter.getTitle().equals("")) {
-            sql += TITLE + " LIKE ? AND ";
-            params[index] = true;
-        }
-        index++;
-        if(filter.getAuthor() != null && !filter.getAuthor().equals("")) {
-            sql += AUTHORID + " LIKE ? AND ";
-            params[index] = true;
-        }
-        index++;
-        if(filter.getAlbum() != null && !filter.getAlbum().equals("")) {
-            sql += ALBUMID + " LIKE ? AND ";
-            params[index] = true;
-        }
-        index++;
-        if(filter.getYear() != null && !filter.getYear().equals("")) {
-            sql += YEAR + " = ? AND ";
-            params[index] = true;
-        }
-        index++;
-        if(filter.getGenre() != null && !filter.getGenre().equals("")) {
-            sql += GENREID + " LIKE ? AND ";
-            params[index] = true;
-        }
-        sql = sql.substring(0, sql.lastIndexOf("AND "));
-        sql += " LIMIT ? OFFSET ?";
-
-        try(PreparedStatement ps = conn.prepareStatement(sql)) {
-            int i=1;
-            for(int j=0; j<params.length; j++) {
-                if(params[j]) {
-                    switch (j) {
-                        case 0:
-                            ps.setString(i, "%"+filter.getTitle()+"%");
-                            break;
-                        case 1:
-                            ps.setString(i, "%"+filter.getAuthor()+"%");
-                            break;
-                        case 2:
-                            ps.setString(i, "%"+filter.getAlbum()+"%");
-                            break;
-                        case 3:
-                            ps.setInt(i, Integer.parseInt(filter.getYear()));
-                            break;
-                        case 4:
-                            ps.setString(i, "%"+filter.getGenre()+"%");
-                            break;
-                    }
-                    i++;
-                }
-            }
-            ps.setInt(i, PAGE_SIZE); i++;
-            ps.setInt(i, page*PAGE_SIZE);
-
-            try(ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    musicList.add(new Music(rs));
-                }
-                return musicList;
-            }
-        } catch (Exception e) {
-            logger.error("Exception in getMusicByParams: " + e.getMessage());
             return null;
         }
 
@@ -287,7 +211,7 @@ public class SQLiteJDBCImpl {
                 }
             }
         } catch (SQLException e) {
-            logger.error("Exception in updateOneMusic: " + e.getMessage());
+            logger.error("Exception in updateMusic: " + e.getMessage());
             return -2;
         }
 
@@ -308,7 +232,7 @@ public class SQLiteJDBCImpl {
 
             ps.executeUpdate();
         } catch (SQLException e) {
-            logger.error("Exception in updateOneMusic: " + e.getMessage());
+            logger.error("Exception in updateMusic: " + e.getMessage());
             return -2;
         }
 
@@ -340,7 +264,7 @@ public class SQLiteJDBCImpl {
                 }
             }
         } catch (SQLException e) {
-            logger.error("Exception in updateOneMusic: " + e.getMessage());
+            logger.error("Exception in updateMusic: " + e.getMessage());
             return -2;
         }
 

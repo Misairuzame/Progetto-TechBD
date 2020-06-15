@@ -1,8 +1,7 @@
 package com.gb.db.PostgreSQLImpl;
 
-import com.gb.DAO.MusicDAO;
-import com.gb.modelObject.Music;
-import com.gb.modelObject.SearchFilter;
+import com.gb.DAO.*;
+import com.gb.modelObject.*;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +14,7 @@ import java.util.List;
 
 import static com.gb.Constants.*;
 
-public class PostgreSQLImpl implements MusicDAO {
+public class PostgreSQLImpl implements MusicDAO, AlbumDAO, ArtistDAO, GroupDAO, GenreDAO, LinkDAO {
 
     public static Connection conn = null;
     public static PostgreSQLImpl Database = null;
@@ -96,22 +95,12 @@ public class PostgreSQLImpl implements MusicDAO {
     }
 
     @Override
-    public List<Music> getMusicById(long id) {
-        return null;
-    }
-
-    @Override
     public List<Music> getMusicJoinAll(long id) {
         return null;
     }
 
     @Override
-    public List<Music> getMusicByParams(SearchFilter filter, int page) {
-        return null;
-    }
-
-    @Override
-    public int updateOneMusic(Music music) {
+    public int updateMusic(Music music) {
         return 0;
     }
 
@@ -123,5 +112,65 @@ public class PostgreSQLImpl implements MusicDAO {
     @Override
     public int deleteMusic(int id) {
         return 0;
+    }
+
+    @Override
+    public List<Album> getAllAlbums() {
+        return null;
+    }
+
+    @Override
+    public int deleteAlbum(int albumId) {
+        return 0;
+    }
+
+    @Override
+    public int insertAlbum(Album album) {
+        return 0;
+    }
+
+    @Override
+    public Object albumJoinGroup() {
+        return null;
+    }
+
+    @Override
+    public List<Artist> getAllArtists() {
+        return null;
+    }
+
+    @Override
+    public Object artistJoinGroup() {
+        return null;
+    }
+
+    @Override
+    public int updateArtist() {
+        return 0;
+    }
+
+    @Override
+    public List<Genre> getAllGenres() {
+        return null;
+    }
+
+    @Override
+    public int insertGenre(Genre genre) {
+        return 0;
+    }
+
+    @Override
+    public List<Group> getAllGroups() {
+        return null;
+    }
+
+    @Override
+    public int insertGroup(Group group) {
+        return 0;
+    }
+
+    @Override
+    public List<Link> getAllLinks() {
+        return null;
     }
 }

@@ -6,6 +6,8 @@ import java.util.List;
 
 public class HTMLFormatter {
 
+    //TODO: Rimuovere
+
     public static final String HTML_INIT =
             "<html><head><link rel=\"stylesheet\" type=\"text/css\"" +
             "href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css\"></link>" +

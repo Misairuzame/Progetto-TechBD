@@ -31,4 +31,12 @@ public class Constants {
     public static final String DB_PATH      = "jdbc:postgresql://localhost:5432/MusicDBPostgres?currentSchema=MusicDB";
     public static final int    PAGE_SIZE    = 10;
 
+    /**
+     * HTTP METHODS
+     */
+    public static final String GET = "GET";
+    public static final String PUT = "PUT";
+    public static final String POST = "POST";
+    public static final String DELETE = "DELETE";
+
 }

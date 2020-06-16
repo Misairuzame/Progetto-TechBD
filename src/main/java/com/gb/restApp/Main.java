@@ -12,9 +12,8 @@ import spark.Request;
 import spark.Response;
 import spark.template.thymeleaf.ThymeleafTemplateEngine;
 import java.io.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 import static org.apache.http.HttpStatus.*;
 import static javax.ws.rs.core.MediaType.*;
 import static com.gb.Constants.*;
@@ -49,20 +48,10 @@ public class Main {
         get("/", Main::getHomepage);
 
         path("/music", () -> {
-            get("",  Main::getMusic);
+            get("",  Main::dispatchMusic);
 
-            get(":id", Main::getMusicById);
-            get("/:id", Main::getMusicById);
-
-            post("",  Main::addMusic);
-            post("/", Main::addMusic);
-
-            delete("",  Main::deleteAllMusic);
-            delete("/", Main::deleteAllMusic);
-
-            put("/:id", Main::updateMusic);
-
-            delete("/:id", Main::deleteMusic);
+            get(":id", Main::dispatchMusicId);
+            get("/:id", Main::dispatchMusicId);
         });
 
         path("/album", () -> {
@@ -84,6 +73,8 @@ public class Main {
         path("/link", () -> {
             get("",  Main::getLinks);
         });
+
+        get("/mjoinl", Main::musicJoinLink);
 
         get("/favicon.ico", Main::favicon);
 
@@ -197,6 +188,31 @@ public class Main {
         return engine.render(new ModelAndView(model, "home"));
     }
 
+
+
+    private static String dispatchMusic(Request req, Response res) {
+        String userMethod = req.queryParamOrDefault("method", "GET");
+        if(userMethod.equalsIgnoreCase(GET))    return getMusic(req, res);
+        if(userMethod.equalsIgnoreCase(POST))   return addMusic(req, res);
+        if(userMethod.equalsIgnoreCase(DELETE)) return deleteAllMusic(req, res);
+
+        return returnMessage(req, res, SC_BAD_REQUEST, "text-danger",
+                "Metodo HTTP non supportato.");
+    }
+
+    private static String dispatchMusicId(Request req, Response res) {
+        String userMethod = req.queryParamOrDefault("method", "GET");
+        if(userMethod.equalsIgnoreCase(GET))    return getMusicById(req, res);
+        if(userMethod.equalsIgnoreCase(PUT))    return updateMusic(req, res);
+        if(userMethod.equalsIgnoreCase(DELETE)) return deleteMusic(req, res);
+
+        return returnMessage(req, res, SC_BAD_REQUEST, "text-danger",
+                "Metodo HTTP non supportato.");
+    }
+
+
+
+
     private static String getMusic(Request req, Response res) {
         int pageNum = 0;
 
@@ -275,10 +291,17 @@ public class Main {
 
         Music musicToAdd = new Music();
         try {
-            //TODO: aggiungere deserializzazione parametri HTML
+            musicToAdd.setMusicId(Integer.parseInt(req.queryParams("musicid")));
+            musicToAdd.setTitle(req.queryParams("title"));
+            musicToAdd.setAuthorId(Integer.parseInt(req.queryParams("authorid")));
+            musicToAdd.setAlbumId(Integer.parseInt(req.queryParams("albumid")));
+            musicToAdd.setYear(Integer.parseInt(req.queryParams("year")));
+            musicToAdd.setGenreId(Integer.parseInt(req.queryParams("genreid")));
         } catch (NumberFormatException e) {
-            //TODO: restituire messaggio danger
+            logger.warn("Errore nella deserializzazione della musica da inserire");
+            return handleParseError(req, res);
         }
+
         int result = db.insertMusic(musicToAdd);
         if(result < 0) {
             if(result == -2) {
@@ -305,19 +328,13 @@ public class Main {
         }
 
         Music musicToUpdate = new Music();
-        Music musicToAdd = new Music();
         try {
             //TODO: aggiungere deserializzazione parametri HTML
         } catch (NumberFormatException e) {
-            //TODO: restituire messaggio danger
-        } /*catch(JsonSyntaxException e) {
-            logger.error("Errore nella deserializzazione del JSON: "+e.getMessage());
+            logger.warn("Errore nella deserializzazione della musica da aggiornare");
             return handleParseError(req, res);
         }
-        */
-        if(musicToUpdate == null) {
-            return handleInternalError(req, res);
-        }
+
         int result = db.updateMusic(musicToUpdate);
         if(result < 0) {
             if(result == -2) {
@@ -481,6 +498,30 @@ public class Main {
         Map<String, Object> model = new HashMap<>();
         model.put("linkList", linkList);
         return engine.render(new ModelAndView(model, "linkList"));
+    }
+
+    private static String musicJoinLink(Request req, Response res) {
+        PostgreSQLImpl db = PostgreSQLImpl.getInstance();
+        if(db == null) {
+            return handleInternalError(req, res);
+        }
+
+        List<MusicJoinLink> musicJoinLinkList = db.musicJoinLink();
+        if (musicJoinLinkList == null) {
+            return handleInternalError(req, res);
+        }
+        if (musicJoinLinkList.isEmpty()) {
+            return handleNotFound(req, res);
+        }
+
+        res.status(SC_OK);
+
+        info(musicJoinLinkList.toString());
+
+        Map<String, Object> model = new HashMap<>();
+        model.put("musicJoinLinkList", musicJoinLinkList);
+        return engine.render(new ModelAndView(model, "musicJoinLink"));
+
     }
 
     /**

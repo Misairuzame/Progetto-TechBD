@@ -10,6 +10,6 @@ public interface ArtistDAO {
 
     Object artistJoinGroup();
 
-    int updateArtist();
+    int updateArtist(Artist artist);
 
 }

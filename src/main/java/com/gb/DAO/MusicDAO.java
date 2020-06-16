@@ -1,6 +1,7 @@
 package com.gb.DAO;
 
 import com.gb.modelObject.Music;
+import com.gb.modelObject.MusicJoinLink;
 
 import java.util.List;
 
@@ -17,6 +18,8 @@ public interface MusicDAO {
     int deleteMusic(int id);
 
     //TODO: Decidere se implementare o meno
-    List<Music> getMusicJoinAll(long id);
+    Object getMusicJoinAll(int id);
+
+    List<MusicJoinLink>  musicJoinLink();
 
 }

@@ -1,67 +1,54 @@
 package com.gb.modelObject;
 
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import static com.gb.Constants.*;
+
 public class Music {
 
     private static final Logger logger = LoggerFactory.getLogger(Music.class);
 
-    private long id;
+    private Integer musicId;
     private String title;
-    private String author;
-    private String album;
-    private int year;
-    private String genre;
-    private String url;
+    private Integer authorId;
+    private Integer albumId;
+    private Integer year;
+    private Integer genreId;
 
     public Music() { }
 
-    public Music(long id, String title, String author, String album, int year, String genre, String url) {
-        this.id = id;
-        this.title = title;
-        this.author = author;
-        this.album = album;
-        this.year = year;
-        this.genre = genre;
-        this.url = url;
-    }
-
     public Music(ResultSet rs) {
         try {
-            setId(      rs.getLong(  1) );
-            setTitle(   rs.getString(2) );
-            setAuthor(  rs.getString(3) );
-            setAlbum(   rs.getString(4) );
-            setYear(    rs.getInt(   5) );
-            setGenre(   rs.getString(6) );
-            setUrl(     rs.getString(7) );
+            setMusicId(rs.getInt(MUSICID));
+            setTitle(rs.getString(TITLE));
+            setAuthorId(rs.getInt(AUTHORID));
+            setAlbumId(rs.getInt(ALBUMID));
+            setYear(rs.getInt(YEAR));
+            setGenreId(rs.getInt(GENREID));
         } catch(SQLException e) {
             logger.error("Error creating Music object: {}", e.getMessage());
         }
     }
 
-    public JSONObject getJson() {
-        return new JSONObject()
-                .put("id", getId())
-                .put("title", getTitle())
-                .put("author", getAuthor())
-                .put("album", getAlbum())
-                .put("year", getYear())
-                .put("genre", getGenre())
-                .put("url", getUrl());
+    public Music(Integer musicId, String title, Integer authorId, Integer albumId, Integer year, Integer genreId) {
+        this.musicId = musicId;
+        this.title = title;
+        this.authorId = authorId;
+        this.albumId = albumId;
+        this.year = year;
+        this.genreId = genreId;
     }
 
-    public long getId() {
-        return id;
+    public Integer getMusicId() {
+        return musicId;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public void setMusicId(Integer musicId) {
+        this.musicId = musicId;
     }
 
     public String getTitle() {
@@ -72,44 +59,36 @@ public class Music {
         this.title = title;
     }
 
-    public String getAuthor() {
-        return author;
+    public Integer getAuthorId() {
+        return authorId;
     }
 
-    public void setAuthor(String author) {
-        this.author = author;
+    public void setAuthorId(Integer authorId) {
+        this.authorId = authorId;
     }
 
-    public String getAlbum() {
-        return album;
+    public Integer getAlbumId() {
+        return albumId;
     }
 
-    public void setAlbum(String album) {
-        this.album = album;
+    public void setAlbumId(Integer albumId) {
+        this.albumId = albumId;
     }
 
-    public int getYear() {
+    public Integer getYear() {
         return year;
     }
 
-    public void setYear(int year) {
+    public void setYear(Integer year) {
         this.year = year;
     }
 
-    public String getGenre() {
-        return genre;
+    public Integer getGenreId() {
+        return genreId;
     }
 
-    public void setGenre(String genre) {
-        this.genre = genre;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
+    public void setGenreId(Integer genreId) {
+        this.genreId = genreId;
     }
 
 }

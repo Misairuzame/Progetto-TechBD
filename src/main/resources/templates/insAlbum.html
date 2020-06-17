@@ -1,0 +1,34 @@
+<div th:replace="header"/>
+
+<h1 class="display-3 text-success">Inserisci Album</h1>
+<p class="text-warning">Attenzione:</p><p class="text-light">C'&egrave; un vincolo di chiave esterna
+su GroupID. Per inserire un album &egrave; necessario che esista il gruppo che l'ha pubblicato.<br/></p>
+
+<!--
+ Anche se i form supportano il metodo POST, per poter fare il sumbit di alcuni
+ form anche con metodi PUT e DELETE si è creato un campo di input nascosto chiamato "method",
+ il quale contiene il metodo HTTP da utilizzare. "Main.java" legge questo parametro
+ (default = GET) ed effettua l'azione corrispondente (select/insert/update/delete)
+-->
+<form action="album" method="get">
+    <div class="form-group text-light">
+        <label for="albumid">AlbumID</label>
+        <input type="text" class="form-control" id="albumid" placeholder="AlbumID" name="albumid">
+    </div>
+    <div class="form-group text-light">
+        <label for="title">Title</label>
+        <input type="text" class="form-control" id="title" placeholder="Title" name="title">
+    </div>
+    <div class="form-group text-light">
+        <label for="year">Year</label>
+        <input type="text" class="form-control" id="year" placeholder="Year" name="year">
+    </div>
+    <div class="form-group text-light">
+        <label for="groupid">GroupID</label>
+        <input type="text" class="form-control" id="groupid" placeholder="GroupID" name="groupid">
+    </div>
+    <button type="submit" class="btn btn-primary" style="margin: 0">Inserisci</button>
+    <input type="hidden" name="method" value="POST">
+</form>
+
+<div th:replace="footer"/>

@@ -1,0 +1,41 @@
+<div th:replace="header"/>
+
+    <h1 class="display-1 text-primary">Tabella Music</h1>
+    <table align="center" class="table table-striped table-dark table-hover" width="50%" cellpadding="5">
+        <thead class="bg-primary">
+        <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>AuthorID</th>
+            <th>AlbumID</th>
+            <th>Year</th>
+            <th>GenreID</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="music: ${musicList}">
+            <td th:text="${music.getMusicId()}"/>
+            <td th:text="${music.getTitle()}"/>
+            <td th:text="${music.getAuthorId()}"/>
+            <td th:text="${music.getAlbumId()}"/>
+            <td th:text="${music.getYear()}"/>
+            <td th:text="${music.getGenreId()}"/>
+        </tr>
+        </tbody>
+    </table>
+
+<div th:if="${page != -100}">
+<p class="lead text-light" th:text="'Pagina ' + ${page}+'.'"/>
+
+<form class="form-inline" method="get">
+    <button type="submit" class="btn btn-primary mb-2" name="page"
+            th:classappend="(${page == 0}) ? ('disabled')"
+            th:disabled="(${page == 0}) ? ('disabled')"
+            th:style="(${page == 0}) ? ('cursor: not-allowed;')"
+            th:value="${page-1}">Pagina precedente</button>
+    <button type="submit" class="btn btn-primary mb-2" name="page"
+            th:value="${page+1}">Pagina successiva</button>
+</form>
+</div>
+
+<div th:replace="footer"/>

@@ -1,0 +1,49 @@
+<div th:replace="header"/>
+
+<h1 class="display-1 text-warning">Tabella JoinAll</h1>
+<p class="text-light">La query completa &egrave;:<br/><br/>
+    SELECT M.musicid, M.title AS musictitle, groupname, tmptable.numartisti, Al.title AS albumtitle, M.year, Ge.name AS genrename, COUNT(L.link) AS numlink<br/>
+    FROM<br/>
+    music AS M LEFT JOIN album AS Al ON (M.albumid = Al.albumid)<br/>
+    LEFT JOIN<br/>
+    (<br/>
+    &emsp; SELECT COUNT(Ar.artistid) AS numartisti, Gr.name AS groupname, Gr.groupid AS tmpgrid<br/>
+    &emsp; FROM grouptable AS Gr LEFT JOIN artist AS Ar ON (Ar.groupid = Gr.groupid)<br/>
+    &emsp; GROUP BY tmpgrid, groupname<br/>
+    ) as tmptable ON (M.authorid = tmpgrid)<br/>
+    INNER JOIN genre AS Ge ON (M.genreid = Ge.genreid)<br/>
+    LEFT JOIN link AS L on (M.musicid = L.musicid)<br/>
+    GROUP BY M.musicid, tmptable.groupname, Al.title, Ge.name, tmptable.numartisti;
+</p>
+<p class="text-light">
+    Pi&ugrave; semplicemente:
+    Music &#10197; Album &#10197; (Group &#10197; Artist) &#10781; Genre &#10197; Link
+</p>
+<table align="center" class="table table-striped table-dark table-hover" width="50%" cellpadding="5">
+    <thead class="bg-warning text-dark">
+    <tr>
+        <th>MusicID</th>
+        <th>MusicTitle</th>
+        <th>GroupName</th>
+        <th>NumArtists</th>
+        <th>AlbumTitle</th>
+        <th>Year</th>
+        <th>GenreName</th>
+        <th>NumLinks</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="music: ${joinAllList}">
+        <td th:text="${music.getMusicId()}"/>
+        <td th:text="${music.getMusicTitle()}"/>
+        <td th:text="${music.getGroupName()}"/>
+        <td th:text="${music.getNumArtists()}"/>
+        <td th:text="${music.getAlbumTitle()}"/>
+        <td th:text="${music.getYear()}"/>
+        <td th:text="${music.getGenreName()}"/>
+        <td th:text="${music.getNumLinks()}"/>
+    </tr>
+    </tbody>
+</table>
+
+<div th:replace="footer"/>

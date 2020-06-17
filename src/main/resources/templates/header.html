@@ -1,0 +1,40 @@
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"/>
+    <style>
+        .btn {
+            margin: 5px;
+        }
+    </style>
+    <title>MusicService</title>
+</head>
+<body th:style="'background-image: url('+@{http://localhost:8080/img/background.webp}+'); background-size: cover; background-repeat: no-repeat; background-attachment: fixed'">
+<header>
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark" style="width: 100%; height: fit-content;">
+        <a class="navbar-brand" href="/"><h1 class="text-warning">MusicService</h1></a>
+        <form class="form-inline">
+            <a href="/music" class="btn btn-outline-primary">Lista Music</a>
+            <a href="/album" class="btn btn-outline-primary">Lista Album</a>
+            <a href="/artist" class="btn btn-outline-primary">Lista Artist</a>
+            <a href="/group" class="btn btn-outline-primary">Lista Group</a>
+            <a href="/genre" class="btn btn-outline-primary">Lista Genre</a>
+            <a href="/link" class="btn btn-outline-primary">Lista Link</a>
+            <a href="/delmusic" class="btn btn-outline-danger">Elimina Music</a>
+            <a href="/delalbum" class="btn btn-outline-danger">Elimina Album</a>
+            <a href="/insmusic" class="btn btn-outline-success">Inserisci Music</a>
+            <a href="/insgroup" class="btn btn-outline-success">Inserisci Group</a>
+            <a href="/insalbum" class="btn btn-outline-success">Inserisci Album</a>
+            <a href="/insartist" class="btn btn-outline-success">Inserisci Artist</a>
+            <a href="/insgenre" class="btn btn-outline-success">Inserisci Genre</a>
+            <a href="/mjoinl" class="btn btn-outline-warning">Music &#10781; Link</a>
+            <a href="/arjoing" class="btn btn-outline-warning">Artist &#10781; Group</a>
+            <a href="/upmusic" class="btn btn-outline-light">Update Music</a>
+            <a href="/upartist" class="btn btn-outline-light">Update Artist</a>
+            <a href="/joinall" class="btn btn-outline-info">Join All</a>
+        </form>
+    </nav>
+</header>
+<main role="main" class="container" style="padding: 80px 15px 0;">

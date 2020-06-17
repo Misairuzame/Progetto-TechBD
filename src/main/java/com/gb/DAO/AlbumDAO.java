@@ -14,6 +14,4 @@ public interface AlbumDAO {
 
     int insertAlbum(Album album);
 
-    Object albumJoinGroup();
-
 }

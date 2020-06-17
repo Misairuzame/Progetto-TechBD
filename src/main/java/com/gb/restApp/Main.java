@@ -12,6 +12,7 @@ import spark.Request;
 import spark.Response;
 import spark.template.thymeleaf.ThymeleafTemplateEngine;
 import java.io.*;
+import java.net.URLDecoder;
 import java.util.*;
 
 import static org.apache.http.HttpStatus.*;
@@ -54,27 +55,49 @@ public class Main {
             get("/:id", Main::dispatchMusicId);
         });
 
+        get("/upmusic", Main::upMusicForm);
+
+        get("/insmusic", Main::insMusicForm);
+
+        get("/delmusic", Main::delMusicForm);
+
         path("/album", () -> {
-            get("",  Main::getAlbums);
+            get("",  Main::dispatchAlbum);
         });
+
+        get("/insalbum", Main::insAlbumForm);
+
+        get("/delalbum", Main::delAlbumForm);
 
         path("/artist", () -> {
-            get("",  Main::getArtists);
+            get("",  Main::dispatchArtist);
         });
+
+        get("/upartist", Main::upArtistForm);
+
+        get("/insartist", Main::insArtistForm);
 
         path("/group", () -> {
-            get("",  Main::getGroups);
+            get("",  Main::dispatchGroup);
         });
 
+        get("/insgroup", Main::insGroupForm);
+
         path("/genre", () -> {
-            get("",  Main::getGenres);
+            get("",  Main::dispatchGenre);
         });
+
+        get("/insgenre", Main::insGenreForm);
 
         path("/link", () -> {
             get("",  Main::getLinks);
         });
 
         get("/mjoinl", Main::musicJoinLink);
+
+        get("/arjoing", Main::artistJoinGroup);
+
+        get("/joinall", Main::joinAll);
 
         get("/favicon.ico", Main::favicon);
 
@@ -83,6 +106,10 @@ public class Main {
         options("/*", Main::allowCORS);
 
     }
+
+    /**
+     * Sezione di utility varie
+     */
 
     private static String allowCORS(Request req, Response res) {
         /**
@@ -169,11 +196,6 @@ public class Main {
                 "Si e' verificato un errore.");
     }
 
-    private static String handleUnsupportedMediaType(Request req, Response res) {
-        return returnMessage(req, res, SC_UNSUPPORTED_MEDIA_TYPE, "text-danger",
-                "Il media type specificato non &egrave; supportato.");
-    }
-
     private static String handleParseError(Request req, Response res) {
         return returnMessage(req, res, SC_BAD_REQUEST, "text-danger",
                 "Errore nella deserializzazione dei parametri inviati.");
@@ -189,12 +211,18 @@ public class Main {
     }
 
 
+    /**
+     * Sezione per effettuare il dispatching delle richieste.
+     * Necessario per gestire i metodi HTTP.
+     */
+
 
     private static String dispatchMusic(Request req, Response res) {
         String userMethod = req.queryParamOrDefault("method", "GET");
         if(userMethod.equalsIgnoreCase(GET))    return getMusic(req, res);
-        if(userMethod.equalsIgnoreCase(POST))   return addMusic(req, res);
-        if(userMethod.equalsIgnoreCase(DELETE)) return deleteAllMusic(req, res);
+        if(userMethod.equalsIgnoreCase(PUT))    return updateMusic(req, res);
+        if(userMethod.equalsIgnoreCase(POST))   return insertMusic(req, res);
+        if(userMethod.equalsIgnoreCase(DELETE)) return deleteMusic(req, res);
 
         return returnMessage(req, res, SC_BAD_REQUEST, "text-danger",
                 "Metodo HTTP non supportato.");
@@ -203,14 +231,53 @@ public class Main {
     private static String dispatchMusicId(Request req, Response res) {
         String userMethod = req.queryParamOrDefault("method", "GET");
         if(userMethod.equalsIgnoreCase(GET))    return getMusicById(req, res);
-        if(userMethod.equalsIgnoreCase(PUT))    return updateMusic(req, res);
-        if(userMethod.equalsIgnoreCase(DELETE)) return deleteMusic(req, res);
+
+        return returnMessage(req, res, SC_BAD_REQUEST, "text-danger",
+                "Metodo HTTP non supportato.");
+    }
+
+    private static String dispatchGroup(Request req, Response res) {
+        String userMethod = req.queryParamOrDefault("method", "GET");
+        if(userMethod.equalsIgnoreCase(GET))    return getGroups(req, res);
+        if(userMethod.equalsIgnoreCase(POST))   return insertGroup(req, res);
+
+        return returnMessage(req, res, SC_BAD_REQUEST, "text-danger",
+                "Metodo HTTP non supportato.");
+    }
+
+    private static String dispatchGenre(Request req, Response res) {
+        String userMethod = req.queryParamOrDefault("method", "GET");
+        if(userMethod.equalsIgnoreCase(GET))    return getGenres(req, res);
+        if(userMethod.equalsIgnoreCase(POST))   return insertGenre(req, res);
+
+        return returnMessage(req, res, SC_BAD_REQUEST, "text-danger",
+                "Metodo HTTP non supportato.");
+    }
+
+    private static String dispatchAlbum(Request req, Response res) {
+        String userMethod = req.queryParamOrDefault("method", "GET");
+        if(userMethod.equalsIgnoreCase(GET))    return getAlbums(req, res);
+        if(userMethod.equalsIgnoreCase(POST))   return insertAlbum(req, res);
+        if(userMethod.equalsIgnoreCase(DELETE)) return deleteAlbum(req, res);
+
+        return returnMessage(req, res, SC_BAD_REQUEST, "text-danger",
+                "Metodo HTTP non supportato.");
+    }
+
+    private static String dispatchArtist(Request req, Response res) {
+        String userMethod = req.queryParamOrDefault("method", "GET");
+        if(userMethod.equalsIgnoreCase(GET))    return getArtists(req, res);
+        if(userMethod.equalsIgnoreCase(POST))   return insertArtist(req, res);
+        if(userMethod.equalsIgnoreCase(PUT))    return updateArtist(req, res);
 
         return returnMessage(req, res, SC_BAD_REQUEST, "text-danger",
                 "Metodo HTTP non supportato.");
     }
 
 
+    /**
+     * Sezione per l'esecuzione di query
+     */
 
 
     private static String getMusic(Request req, Response res) {
@@ -279,11 +346,22 @@ public class Main {
         return engine.render(new ModelAndView(model, "musicList"));
     }
 
-    private static String addMusic(Request req, Response res) {
-        if(req.contentType() == null || !req.contentType().equals(TEXT_HTML)) {
-            return handleUnsupportedMediaType(req, res);
-        }
+    private static String upMusicForm(Request req, Response res) {
+        Map<String, String> model = new HashMap<>();
+        return engine.render(new ModelAndView(model, "upMusic"));
+    }
 
+    private static String insMusicForm(Request req, Response res) {
+        Map<String, String> model = new HashMap<>();
+        return engine.render(new ModelAndView(model, "insMusic"));
+    }
+
+    private static String delMusicForm(Request req, Response res) {
+        Map<String, String> model = new HashMap<>();
+        return engine.render(new ModelAndView(model, "delMusic"));
+    }
+
+    private static String insertMusic(Request req, Response res) {
         PostgreSQLImpl db = PostgreSQLImpl.getInstance();
         if (db == null) {
             return handleInternalError(req, res);
@@ -291,13 +369,17 @@ public class Main {
 
         Music musicToAdd = new Music();
         try {
-            musicToAdd.setMusicId(Integer.parseInt(req.queryParams("musicid")));
-            musicToAdd.setTitle(req.queryParams("title"));
-            musicToAdd.setAuthorId(Integer.parseInt(req.queryParams("authorid")));
-            musicToAdd.setAlbumId(Integer.parseInt(req.queryParams("albumid")));
-            musicToAdd.setYear(Integer.parseInt(req.queryParams("year")));
-            musicToAdd.setGenreId(Integer.parseInt(req.queryParams("genreid")));
-        } catch (NumberFormatException e) {
+            musicToAdd.setMusicId(Integer.parseInt(req.queryParams(MUSICID)));
+            musicToAdd.setTitle(URLDecoder.decode(req.queryParams(TITLE), "UTF-8"));
+            musicToAdd.setAuthorId(Integer.parseInt(req.queryParams(AUTHORID)));
+            if (req.queryParams(ALBUMID) != null && !req.queryParams(ALBUMID).equals("")) {
+                musicToAdd.setAlbumId(Integer.parseInt(req.queryParams(ALBUMID)));
+            } else {
+                musicToAdd.setAlbumId(-1000);
+            }
+            musicToAdd.setYear(Integer.parseInt(req.queryParams(YEAR)));
+            musicToAdd.setGenreId(Integer.parseInt(req.queryParams(GENREID)));
+        } catch (NumberFormatException | UnsupportedEncodingException e) {
             logger.warn("Errore nella deserializzazione della musica da inserire");
             return handleParseError(req, res);
         }
@@ -309,7 +391,7 @@ public class Main {
             }
             if(result == -1) {
                 return returnMessage(req, res, SC_CONFLICT, "text-warning",
-                        "Esiste già una musica con id "+musicToAdd.getMusicId()+".");
+                        "Esiste gia' una musica con id "+musicToAdd.getMusicId()+".");
             }
         }
 
@@ -318,10 +400,6 @@ public class Main {
     }
 
     private static String updateMusic(Request req, Response res) {
-        if(req.contentType() == null || !req.contentType().equals(TEXT_HTML)) {
-            return handleUnsupportedMediaType(req, res);
-        }
-
         PostgreSQLImpl db = PostgreSQLImpl.getInstance();
         if (db == null) {
             return handleInternalError(req, res);
@@ -329,8 +407,17 @@ public class Main {
 
         Music musicToUpdate = new Music();
         try {
-            //TODO: aggiungere deserializzazione parametri HTML
-        } catch (NumberFormatException e) {
+            musicToUpdate.setMusicId(Integer.parseInt(req.queryParams(MUSICID)));
+            musicToUpdate.setTitle(URLDecoder.decode(req.queryParams(TITLE), "UTF-8"));
+            musicToUpdate.setAuthorId(Integer.parseInt(req.queryParams(AUTHORID)));
+            if (req.queryParams(ALBUMID) != null && !req.queryParams(ALBUMID).equals("")) {
+                musicToUpdate.setAlbumId(Integer.parseInt(req.queryParams(ALBUMID)));
+            } else {
+                musicToUpdate.setAlbumId(-1000);
+            }
+            musicToUpdate.setYear(Integer.parseInt(req.queryParams(YEAR)));
+            musicToUpdate.setGenreId(Integer.parseInt(req.queryParams(GENREID)));
+        } catch (NumberFormatException | UnsupportedEncodingException e) {
             logger.warn("Errore nella deserializzazione della musica da aggiornare");
             return handleParseError(req, res);
         }
@@ -357,12 +444,12 @@ public class Main {
             return handleInternalError(req, res);
         }
 
-        if(req.params("id") == null || !isNumber(req.params("id"))) {
+        if(req.queryParams(MUSICID) == null || !isNumber(req.queryParams(MUSICID))) {
             return returnMessage(req, res, SC_BAD_REQUEST, "text-danger",
                     "Specificare un id nel formato corretto.");
         }
 
-        int musicId = Integer.parseInt(req.params("id"));
+        int musicId = Integer.parseInt(req.queryParams(MUSICID));
         int result = db.deleteMusic(musicId);
         if(result < 0) {
             if(result == -2) {
@@ -378,11 +465,6 @@ public class Main {
         return returnMessage(req, res, SC_OK, "text-success",
                 "Musica con id "+musicId+" eliminata con successo.");
 
-    }
-
-    private static String deleteAllMusic(Request req, Response res) {
-        return returnMessage(req, res, SC_FORBIDDEN, "text-danger",
-                "L'eliminazione dell'intera collezione e' vietata.");
     }
 
     private static String getAlbums(Request req, Response res) {
@@ -408,6 +490,77 @@ public class Main {
         return engine.render(new ModelAndView(model, "albumList"));
     }
 
+    private static String insAlbumForm(Request req, Response res) {
+        Map<String, String> model = new HashMap<>();
+        return engine.render(new ModelAndView(model, "insAlbum"));
+    }
+
+    private static String delAlbumForm(Request req, Response res) {
+        Map<String, String> model = new HashMap<>();
+        return engine.render(new ModelAndView(model, "delAlbum"));
+    }
+
+    private static String insertAlbum(Request req, Response res) {
+        PostgreSQLImpl db = PostgreSQLImpl.getInstance();
+        if (db == null) {
+            return handleInternalError(req, res);
+        }
+
+        Album albumToAdd = new Album();
+        try {
+            albumToAdd.setAlbumId(Integer.parseInt(req.queryParams(ALBUMID)));
+            albumToAdd.setTitle(URLDecoder.decode(req.queryParams(TITLE), "UTF-8"));
+            albumToAdd.setYear(Integer.parseInt(req.queryParams(YEAR)));
+            albumToAdd.setGroupId(Integer.parseInt(req.queryParams(GROUPID)));
+        } catch (NumberFormatException | UnsupportedEncodingException e) {
+            logger.warn("Errore nella deserializzazione dell' album da inserire");
+            return handleParseError(req, res);
+        }
+
+        int result = db.insertAlbum(albumToAdd);
+        if(result < 0) {
+            if(result == -2) {
+                return handleInternalError(req, res);
+            }
+            if(result == -1) {
+                return returnMessage(req, res, SC_CONFLICT, "text-warning",
+                        "Esiste gia' un album con id "+albumToAdd.getAlbumId()+".");
+            }
+        }
+
+        return returnMessage(req, res, SC_CREATED, "text-success",
+                "Album con id "+albumToAdd.getAlbumId()+" aggiunto con successo.");
+    }
+
+    private static String deleteAlbum(Request req, Response res) {
+        PostgreSQLImpl db = PostgreSQLImpl.getInstance();
+        if (db == null) {
+            return handleInternalError(req, res);
+        }
+
+        if(req.queryParams(ALBUMID) == null || !isNumber(req.queryParams(ALBUMID))) {
+            return returnMessage(req, res, SC_BAD_REQUEST, "text-danger",
+                    "Specificare un id nel formato corretto.");
+        }
+
+        int albumId = Integer.parseInt(req.queryParams(ALBUMID));
+        int result = db.deleteAlbum(albumId);
+        if(result < 0) {
+            if(result == -2) {
+                return handleInternalError(req, res);
+            }
+            if(result == -1) {
+                return returnMessage(req, res, SC_BAD_REQUEST, "text-warning",
+                        "Non esiste un album con id "+ albumId +", " +
+                                "impossibile eliminarlo.");
+            }
+        }
+
+        return returnMessage(req, res, SC_OK, "text-success",
+                "Album con id "+ albumId +" eliminato con successo.");
+
+    }
+
     private static String getArtists(Request req, Response res) {
         PostgreSQLImpl db = PostgreSQLImpl.getInstance();
         if (db == null) {
@@ -429,6 +582,79 @@ public class Main {
         Map<String, Object> model = new HashMap<>();
         model.put("artistList", artistList);
         return engine.render(new ModelAndView(model, "artistList"));
+    }
+
+    private static String upArtistForm(Request req, Response res) {
+        Map<String, String> model = new HashMap<>();
+        return engine.render(new ModelAndView(model, "upArtist"));
+    }
+
+    private static String insArtistForm(Request req, Response res) {
+        Map<String, String> model = new HashMap<>();
+        return engine.render(new ModelAndView(model, "insArtist"));
+    }
+
+    private static String updateArtist(Request req, Response res) {
+        PostgreSQLImpl db = PostgreSQLImpl.getInstance();
+        if (db == null) {
+            return handleInternalError(req, res);
+        }
+
+        Artist artistToUpdate = new Artist();
+        try {
+            artistToUpdate.setArtistId(Integer.parseInt(req.queryParams(ARTISTID)));
+            artistToUpdate.setName(URLDecoder.decode(req.queryParams(NAME), "UTF-8"));
+            artistToUpdate.setGroupId(Integer.parseInt(req.queryParams(GROUPID)));
+        } catch (NumberFormatException | UnsupportedEncodingException e) {
+            logger.warn("Errore nella deserializzazione dell' artista da aggiornare");
+            return handleParseError(req, res);
+        }
+
+        int result = db.updateArtist(artistToUpdate);
+        if(result < 0) {
+            if(result == -2) {
+                return handleInternalError(req, res);
+            }
+            if(result == -1) {
+                return returnMessage(req, res, SC_BAD_REQUEST, "text-warning",
+                        "Non esiste un artista con id "+ artistToUpdate.getArtistId()+", " +
+                                "impossibile aggiornarlo.");
+            }
+        }
+
+        return returnMessage(req, res, SC_OK, "text-success",
+                "Artista con id "+ artistToUpdate.getArtistId()+" modificato con successo.");
+    }
+
+    private static String insertArtist(Request req, Response res) {
+        PostgreSQLImpl db = PostgreSQLImpl.getInstance();
+        if (db == null) {
+            return handleInternalError(req, res);
+        }
+
+        Artist artistToAdd = new Artist();
+        try {
+            artistToAdd.setArtistId(Integer.parseInt(req.queryParams(ARTISTID)));
+            artistToAdd.setName(URLDecoder.decode(req.queryParams(NAME), "UTF-8"));
+            artistToAdd.setGroupId(Integer.parseInt(req.queryParams(GROUPID)));
+        } catch (NumberFormatException | UnsupportedEncodingException e) {
+            logger.warn("Errore nella deserializzazione dell' artista da inserire");
+            return handleParseError(req, res);
+        }
+
+        int result = db.insertArtist(artistToAdd);
+        if(result < 0) {
+            if(result == -2) {
+                return handleInternalError(req, res);
+            }
+            if(result == -1) {
+                return returnMessage(req, res, SC_CONFLICT, "text-warning",
+                        "Esiste gia' un artista con id "+ artistToAdd.getArtistId()+".");
+            }
+        }
+
+        return returnMessage(req, res, SC_CREATED, "text-success",
+                "Artista con id "+ artistToAdd.getArtistId()+" aggiunto con successo.");
     }
 
     private static String getGroups(Request req, Response res) {
@@ -454,6 +680,41 @@ public class Main {
         return engine.render(new ModelAndView(model, "groupList"));
     }
 
+    private static String insGroupForm(Request req, Response res) {
+        Map<String, String> model = new HashMap<>();
+        return engine.render(new ModelAndView(model, "insGroup"));
+    }
+
+    private static String insertGroup(Request req, Response res) {
+        PostgreSQLImpl db = PostgreSQLImpl.getInstance();
+        if (db == null) {
+            return handleInternalError(req, res);
+        }
+
+        Group groupToAdd = new Group();
+        try {
+            groupToAdd.setGroupId(Integer.parseInt(req.queryParams(GROUPID)));
+            groupToAdd.setName(URLDecoder.decode(req.queryParams(NAME), "UTF-8"));
+        } catch (NumberFormatException | UnsupportedEncodingException e) {
+            logger.warn("Errore nella deserializzazione del gruppo da inserire");
+            return handleParseError(req, res);
+        }
+
+        int result = db.insertGroup(groupToAdd);
+        if(result < 0) {
+            if(result == -2) {
+                return handleInternalError(req, res);
+            }
+            if(result == -1) {
+                return returnMessage(req, res, SC_CONFLICT, "text-warning",
+                        "Esiste gia' un gruppo con id "+groupToAdd.getGroupId()+".");
+            }
+        }
+
+        return returnMessage(req, res, SC_CREATED, "text-success",
+                "Gruppo con id "+groupToAdd.getGroupId()+" aggiunto con successo.");
+    }
+
     private static String getGenres(Request req, Response res) {
         PostgreSQLImpl db = PostgreSQLImpl.getInstance();
         if (db == null) {
@@ -475,6 +736,41 @@ public class Main {
         Map<String, Object> model = new HashMap<>();
         model.put("genreList", genreList);
         return engine.render(new ModelAndView(model, "genreList"));
+    }
+
+    private static String insGenreForm(Request req, Response res) {
+        Map<String, String> model = new HashMap<>();
+        return engine.render(new ModelAndView(model, "insGenre"));
+    }
+
+    private static String insertGenre(Request req, Response res) {
+        PostgreSQLImpl db = PostgreSQLImpl.getInstance();
+        if (db == null) {
+            return handleInternalError(req, res);
+        }
+
+        Genre genreToAdd = new Genre();
+        try {
+            genreToAdd.setGenreId(Integer.parseInt(req.queryParams(GENREID)));
+            genreToAdd.setName(URLDecoder.decode(req.queryParams(NAME), "UTF-8"));
+        } catch (NumberFormatException | UnsupportedEncodingException e) {
+            logger.warn("Errore nella deserializzazione del genere da inserire");
+            return handleParseError(req, res);
+        }
+
+        int result = db.insertGenre(genreToAdd);
+        if(result < 0) {
+            if(result == -2) {
+                return handleInternalError(req, res);
+            }
+            if(result == -1) {
+                return returnMessage(req, res, SC_CONFLICT, "text-warning",
+                        "Esiste gia' un genere con id "+ genreToAdd.getGenreId()+".");
+            }
+        }
+
+        return returnMessage(req, res, SC_CREATED, "text-success",
+                "Genere con id "+ genreToAdd.getGenreId()+" aggiunto con successo.");
     }
 
     private static String getLinks(Request req, Response res) {
@@ -521,7 +817,52 @@ public class Main {
         Map<String, Object> model = new HashMap<>();
         model.put("musicJoinLinkList", musicJoinLinkList);
         return engine.render(new ModelAndView(model, "musicJoinLink"));
+    }
 
+    private static String artistJoinGroup(Request req, Response res) {
+        PostgreSQLImpl db = PostgreSQLImpl.getInstance();
+        if(db == null) {
+            return handleInternalError(req, res);
+        }
+
+        List<ArtistJoinGroup> artistJoinGroupList = db.artistJoinGroup();
+        if (artistJoinGroupList == null) {
+            return handleInternalError(req, res);
+        }
+        if (artistJoinGroupList.isEmpty()) {
+            return handleNotFound(req, res);
+        }
+
+        res.status(SC_OK);
+
+        info(artistJoinGroupList.toString());
+
+        Map<String, Object> model = new HashMap<>();
+        model.put("artistJoinGroupList", artistJoinGroupList);
+        return engine.render(new ModelAndView(model, "artistJoinGroup"));
+    }
+
+    private static String joinAll(Request req, Response res) {
+        PostgreSQLImpl db = PostgreSQLImpl.getInstance();
+        if(db == null) {
+            return handleInternalError(req, res);
+        }
+
+        List<JoinAll> joinAllList = db.joinAll();
+        if (joinAllList == null) {
+            return handleInternalError(req, res);
+        }
+        if (joinAllList.isEmpty()) {
+            return handleNotFound(req, res);
+        }
+
+        res.status(SC_OK);
+
+        info(joinAllList.toString());
+
+        Map<String, Object> model = new HashMap<>();
+        model.put("joinAllList", joinAllList);
+        return engine.render(new ModelAndView(model, "joinAll"));
     }
 
     /**

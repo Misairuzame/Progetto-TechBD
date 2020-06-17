@@ -3,3 +3,4 @@
 .gradle
 build
 creds.txt
+musicDB.db

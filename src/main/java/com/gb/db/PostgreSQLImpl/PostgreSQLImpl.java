@@ -64,7 +64,6 @@ public class PostgreSQLImpl implements MusicDAO, AlbumDAO, ArtistDAO, GroupDAO, 
     }
 
     @Override
-    /* Done */
     public List<Music> getAllMusic(int page) {
         List<Music> musicList = new ArrayList<>();
 
@@ -89,7 +88,6 @@ public class PostgreSQLImpl implements MusicDAO, AlbumDAO, ArtistDAO, GroupDAO, 
     }
 
     @Override
-    /* Done */
     public List<Music> getMusicById(int musicId) {
         List<Music> musicList = new ArrayList<>();
 
@@ -113,12 +111,38 @@ public class PostgreSQLImpl implements MusicDAO, AlbumDAO, ArtistDAO, GroupDAO, 
     }
 
     @Override
-    public Object getMusicJoinAll(int id) {
-        return null;
+    public List<JoinAll> joinAll() {
+        List<JoinAll> musicList = new ArrayList<>();
+
+        String sql =
+                " SELECT M.musicid, M.title AS musictitle, groupname, tmptable.numartisti, Al.title AS albumtitle, " +
+                " M.year, Ge.name AS genrename, COUNT(L.link) AS numlink " +
+                " FROM " +
+                " music AS M LEFT JOIN album AS Al ON (M.albumid = Al.albumid) " +
+                " LEFT JOIN " +
+                " ( " +
+                    " SELECT COUNT(Ar.artistid) AS numartisti, Gr.name AS groupname, Gr.groupid AS tmpgrid " +
+                    " FROM grouptable AS Gr LEFT JOIN artist AS Ar ON (Ar.groupid = Gr.groupid) " +
+                    " GROUP BY tmpgrid, groupname " +
+                " ) as tmptable ON (M.authorid = tmpgrid) " +
+                " INNER JOIN genre AS Ge ON (M.genreid = Ge.genreid) " +
+                " LEFT JOIN link AS L on (M.musicid = L.musicid) " +
+                " GROUP BY M.musicid, tmptable.groupname, Al.title, Ge.name, tmptable.numartisti ";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            try (ResultSet rs = ps.executeQuery()) {
+                while(rs.next()) {
+                    musicList.add(new JoinAll(rs));
+                }
+            }
+            return musicList;
+        } catch (SQLException e) {
+            logger.error("Error in joinAll: {}", e.getMessage());
+            return null;
+        }
     }
 
     @Override
-    /* Done */
     public int updateMusic(Music music) {
         String check =
                 " SELECT COUNT(*) " +
@@ -167,7 +191,6 @@ public class PostgreSQLImpl implements MusicDAO, AlbumDAO, ArtistDAO, GroupDAO, 
     }
 
     @Override
-    /* Done */
     public int insertMusic(Music music) {
         String check =
                 " SELECT COUNT(*) " +
@@ -201,10 +224,13 @@ public class PostgreSQLImpl implements MusicDAO, AlbumDAO, ArtistDAO, GroupDAO, 
             ps.setInt(1, music.getMusicId());
             ps.setString(2, music.getTitle());
             ps.setInt(3, music.getAuthorId());
-            ps.setInt(4, music.getAlbumId());
-            ps.setInt(5, music.getAuthorId());
-            ps.setInt(6, music.getYear());
-            ps.setInt(7, music.getGenreId());
+            if (music.getAlbumId() < 0) {
+                ps.setNull(4, Types.INTEGER);
+            } else {
+                ps.setInt(4, music.getAlbumId());
+            }
+            ps.setInt(5, music.getYear());
+            ps.setInt(6, music.getGenreId());
 
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -216,7 +242,6 @@ public class PostgreSQLImpl implements MusicDAO, AlbumDAO, ArtistDAO, GroupDAO, 
     }
 
     @Override
-    /* Done */
     public int deleteMusic(int id) {
         String check =
                 " SELECT COUNT(*) " +
@@ -257,7 +282,6 @@ public class PostgreSQLImpl implements MusicDAO, AlbumDAO, ArtistDAO, GroupDAO, 
     }
 
     @Override
-    /* Done */
     public List<Album> getAllAlbums() {
         List<Album> albumList = new ArrayList<>();
 
@@ -279,7 +303,6 @@ public class PostgreSQLImpl implements MusicDAO, AlbumDAO, ArtistDAO, GroupDAO, 
     }
 
     @Override
-    /* Done */
     public List<Album> getAlbumById(int albumId) {
         List<Album> albumList = new ArrayList<>();
 
@@ -303,7 +326,6 @@ public class PostgreSQLImpl implements MusicDAO, AlbumDAO, ArtistDAO, GroupDAO, 
     }
 
     @Override
-    /* Done */
     public int deleteAlbum(int albumId) {
         String check =
                 " SELECT COUNT(*) " +
@@ -344,7 +366,6 @@ public class PostgreSQLImpl implements MusicDAO, AlbumDAO, ArtistDAO, GroupDAO, 
     }
 
     @Override
-    /* Done */
     public int insertAlbum(Album album) {
         String check =
                 " SELECT COUNT(*) " +
@@ -390,12 +411,6 @@ public class PostgreSQLImpl implements MusicDAO, AlbumDAO, ArtistDAO, GroupDAO, 
     }
 
     @Override
-    public Object albumJoinGroup() {
-        return null;
-    }
-
-    @Override
-    /* Done */
     public List<Artist> getAllArtists() {
         List<Artist> artistList = new ArrayList<>();
 
@@ -417,12 +432,28 @@ public class PostgreSQLImpl implements MusicDAO, AlbumDAO, ArtistDAO, GroupDAO, 
     }
 
     @Override
-    public Object artistJoinGroup() {
-        return null;
+    public List<ArtistJoinGroup> artistJoinGroup() {
+        List<ArtistJoinGroup> list = new ArrayList<>();
+
+        String sql =
+                " SELECT A."+ARTISTID+", A."+NAME+", A."+GROUPID+", G."+NAME+
+                " FROM "+ARTIST_TABLE+" as A LEFT JOIN "+GROUP_TABLE+" as G" +
+                " ON A."+GROUPID+" = G."+GROUPID;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            try (ResultSet rs = ps.executeQuery()) {
+                while(rs.next()) {
+                    list.add(new ArtistJoinGroup(rs));
+                }
+            }
+            return list;
+        } catch (SQLException e) {
+            logger.error("Error in artistJoinGroup: {}", e.getMessage());
+            return null;
+        }
     }
 
     @Override
-    /* Done */
     public int updateArtist(Artist artist) {
         String check =
                 " SELECT COUNT(*) " +
@@ -467,7 +498,50 @@ public class PostgreSQLImpl implements MusicDAO, AlbumDAO, ArtistDAO, GroupDAO, 
     }
 
     @Override
-    /* Done */
+    public int insertArtist(Artist artist) {
+        String check =
+                " SELECT COUNT(*) " +
+                " FROM "  + ARTIST_TABLE +
+                " WHERE " + ARTISTID + " = ? ";
+
+        boolean exists = false;
+
+        try (PreparedStatement pStat = conn.prepareStatement(check)) {
+            pStat.setInt(1, artist.getArtistId());
+            try (ResultSet rs = pStat.executeQuery()) {
+                if (rs.next()) {
+                    exists = rs.getInt(1) > 0;
+                }
+                if (exists) {
+                    logger.warn("Esiste gia' un artista con id {}, impossibile crearne uno nuovo.", artist.getArtistId());
+                    return -1;
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Exception in insertArtist: " + e.getMessage());
+            return -2;
+        }
+
+        String sql =
+                " INSERT INTO " + ARTIST_TABLE +
+                " ( " + ARTISTID + ", " + NAME + ", " + GROUPID +
+                " ) VALUES (?,?,?)";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, artist.getArtistId());
+            ps.setString(2, artist.getName());
+            ps.setInt(3, artist.getGroupId());
+
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            logger.error("Exception in updateArtist: " + e.getMessage());
+            return -2;
+        }
+
+        return 0;
+    }
+
+    @Override
     public List<Genre> getAllGenres() {
         List<Genre> genreList = new ArrayList<>();
 
@@ -489,7 +563,6 @@ public class PostgreSQLImpl implements MusicDAO, AlbumDAO, ArtistDAO, GroupDAO, 
     }
 
     @Override
-    /* Done */
     public List<Genre> getGenreById(int genreId) {
         List<Genre> genreList = new ArrayList<>();
 
@@ -513,7 +586,6 @@ public class PostgreSQLImpl implements MusicDAO, AlbumDAO, ArtistDAO, GroupDAO, 
     }
 
     @Override
-    /* Done */
     public int insertGenre(Genre genre) {
         String check =
                 " SELECT COUNT(*) " +
@@ -557,7 +629,6 @@ public class PostgreSQLImpl implements MusicDAO, AlbumDAO, ArtistDAO, GroupDAO, 
     }
 
     @Override
-    /* Done */
     public List<Group> getAllGroups() {
         List<Group> groupList = new ArrayList<>();
 
@@ -579,7 +650,6 @@ public class PostgreSQLImpl implements MusicDAO, AlbumDAO, ArtistDAO, GroupDAO, 
     }
 
     @Override
-    /* Done */
     public List<Group> getGroupById(int groupId) {
         List<Group> groupList = new ArrayList<>();
 
@@ -603,7 +673,6 @@ public class PostgreSQLImpl implements MusicDAO, AlbumDAO, ArtistDAO, GroupDAO, 
     }
 
     @Override
-    /* Done */
     public int insertGroup(Group group) {
         String check =
                 " SELECT COUNT(*) " +
@@ -647,7 +716,6 @@ public class PostgreSQLImpl implements MusicDAO, AlbumDAO, ArtistDAO, GroupDAO, 
     }
 
     @Override
-    /* Done */
     public List<Link> getAllLinks() {
         List<Link> linkList = new ArrayList<>();
 
@@ -668,6 +736,7 @@ public class PostgreSQLImpl implements MusicDAO, AlbumDAO, ArtistDAO, GroupDAO, 
         }
     }
 
+    @Override
     public List<MusicJoinLink> musicJoinLink() {
         List<MusicJoinLink> musicList = new ArrayList<>();
 

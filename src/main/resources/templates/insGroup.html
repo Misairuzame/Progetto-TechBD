@@ -1,0 +1,24 @@
+<div th:replace="header"/>
+
+<h1 class="display-3 text-success">Inserisci Group</h1>
+
+<!--
+ Anche se i form supportano il metodo POST, per poter fare il sumbit di alcuni
+ form anche con metodi PUT e DELETE si è creato un campo di input nascosto chiamato "method",
+ il quale contiene il metodo HTTP da utilizzare. "Main.java" legge questo parametro
+ (default = GET) ed effettua l'azione corrispondente (select/insert/update/delete)
+-->
+<form action="group" method="get">
+    <div class="form-group text-light">
+        <label for="groupid">GroupID</label>
+        <input type="text" class="form-control" id="groupid" placeholder="GroupID" name="groupid">
+    </div>
+    <div class="form-group text-light">
+        <label for="name">Name</label>
+        <input type="text" class="form-control" id="name" placeholder="Name" name="name">
+    </div>
+    <button type="submit" class="btn btn-primary" style="margin: 0">Inserisci</button>
+    <input type="hidden" name="method" value="POST">
+</form>
+
+<div th:replace="footer"/>

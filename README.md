@@ -1,5 +1,5 @@
 # Progetto per l'esame di Tecnologie per le Basi di Dati
-![](logo.png)
+![](images/logo.PNG)
 
 ## Introduzione
 Questo progetto vuole essere una prima versione di un sito che gestisce un database di musica. \
@@ -21,13 +21,24 @@ le informazioni tramite HTML (oltre che per la rappresentazione dei dati, i para
 dall'utente vengono trasmessi in formato urlencoded.)
 
 ## Database
+### Introduzione
 Il database utilizzato è [PostgreSQL](https://www.postgresql.org/) v12.3.\
 La struttura del database che si è scelto di creare è la seguente: \
-![](database.PNG) \
-La gerarchia è quindi: Server PostgreSQL > Istanza > Database "MusicDBPostgres" > Schema "MusicDB" >
-Tabelle (album, artist, genre, grouptable, link, music). \
-La connessione al database viene effettuata tramite JDBC.
+![](images/database.PNG) \
+La gerarchia è quindi: \
+Server PostgreSQL > Istanza > Database "MusicDBPostgres" > Schema "MusicDB" >
+Tabelle (album, artist, genre, grouptable, link, music).
+### Schema ER
+Lo schema relazionale del database è il seguente: \
+![](images/erd.PNG) \
+Nota: I nomi in grassetto indicano attributi NOT NULL, le chiavi indicano le chiavi primarie,
+le frecce blu indicano chiavi esterne (REFERENCES).
+### Connessione al DB
+La connessione al database viene effettuata tramite JDBC. Una stringa che permette di collegarsi
+al database è la seguente:
 
+    jdbc:postgresql://localhost:5432/MusicDBPostgres?currentSchema=MusicDB
+#### Altre note
 La query corrispondente alla richiesta <code>GET /music</code> supporta la paginazione dei risultati, e
 presuppone che la prima pagina sia indicata con '0' (che è anche il valore di default, nel caso non sia
 specificata). La richiesta con specificazione della pagina avrà quindi la seguente forma:
@@ -37,7 +48,7 @@ specificata). La richiesta con specificazione della pagina avrà quindi la segue
 ## Richieste possibili
 Le richieste che si possono effettuare tramite questo progetto sono mostrate dal menu del sito,
 sempre presente in alto.
-![](screen.PNG) \
+![](images/screen.PNG) \
 Per ulteriori dettagli si può consultare il file PostgreSQLImpl.java, dove si può anche vedere il
 codice delle query che sono state implementate.
 

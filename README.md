@@ -1,6 +1,22 @@
 # Progetto per l'esame di Tecnologie per le Basi di Dati
 ![](images/logo.png)
 
+Progetto originariamente svolto per il progetto dell'esame di Tecnologie per le Basi di Dati.
+
+Il progetto è stato dockerizzato per semplicità d'uso. Oltre all'uso di variabili d'ambiente per
+i parametri di connessione al DB, l'unica altra cosa che è stata fixata è la query "Join All", che
+aveva qualche errorino.
+
+PostgreSQL è stato impostato alla versione 17.5 invece della 12.3 utilizzata al tempo.
+
+Dopo il quickstart si trova il resto del README originale.
+
+## Quickstart
+```bash
+docker compose up
+```
+Poi visitare il sito all'URL http://localhost:8080.
+
 ## Introduzione
 Questo progetto vuole essere una prima versione di un sito che gestisce un database di musica. \
 L'utente può visualizzare, inserire, modificare ed eliminare le seguenti entità:

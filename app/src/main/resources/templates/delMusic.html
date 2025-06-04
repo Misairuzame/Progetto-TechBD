@@ -1,0 +1,20 @@
+<div th:replace="header"/>
+
+<h1 class="display-3 text-danger">Elimina Music</h1>
+<p class="text-light">Specificare l'ID della canzone da eliminare.</p>
+<!--
+ Anche se i form supportano il metodo POST, per poter fare il sumbit di alcuni
+ form anche con metodi PUT e DELETE si è creato un campo di input nascosto chiamato "method",
+ il quale contiene il metodo HTTP da utilizzare. "Main.java" legge questo parametro
+ (default = GET) ed effettua l'azione corrispondente (select/insert/update/delete)
+-->
+<form action="music" method="get">
+    <div class="form-group text-light">
+        <label for="musicid">MusicID</label>
+        <input type="text" class="form-control" id="musicid" placeholder="MusicID" name="musicid">
+    </div>
+    <button type="submit" class="btn btn-danger" style="margin: 0">Elimina</button>
+    <input type="hidden" name="method" value="DELETE">
+</form>
+
+<div th:replace="footer"/>

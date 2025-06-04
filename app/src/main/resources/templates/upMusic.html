@@ -1,0 +1,43 @@
+<div th:replace="header"/>
+
+<h1 class="display-3 text-light">Aggiorna Music</h1>
+<p class="text-warning">Attenzione:</p><p class="text-light">Ci sono vincoli di chiave esterna su AuthorID
+e GenreID. Per aggiornare una canzone &egrave; necessario che esista l'autore (gruppo) ed il genere.<br/>
+L'AlbumID pu&ograve; essere null, ma se viene specificato deve esistere.</p>
+
+<!--
+ Anche se i form supportano il metodo POST, per poter fare il sumbit di alcuni
+ form anche con metodi PUT e DELETE si è creato un campo di input nascosto chiamato "method",
+ il quale contiene il metodo HTTP da utilizzare. "Main.java" legge questo parametro
+ (default = GET) ed effettua l'azione corrispondente (select/insert/update/delete)
+-->
+<form action="music" method="get">
+    <div class="form-group text-light">
+        <label for="musicid">MusicID</label>
+        <input type="text" class="form-control" id="musicid" placeholder="MusicID" name="musicid">
+    </div>
+    <div class="form-group text-light">
+        <label for="title">Title</label>
+        <input type="text" class="form-control" id="title" placeholder="Title" name="title">
+    </div>
+    <div class="form-group text-light">
+        <label for="authorid">AuthorID</label>
+        <input type="text" class="form-control" id="authorid" placeholder="AuthorID" name="authorid">
+    </div>
+    <div class="form-group text-light">
+        <label for="albumid">AlbumID</label>
+        <input type="text" class="form-control" id="albumid" placeholder="AlbumID" name="albumid">
+    </div>
+    <div class="form-group text-light">
+        <label for="year">Year</label>
+        <input type="text" class="form-control" id="year" placeholder="Year" name="year">
+    </div>
+    <div class="form-group text-light">
+        <label for="genreid">GenreID</label>
+        <input type="text" class="form-control" id="genreid" placeholder="GenreID" name="genreid">
+    </div>
+    <button type="submit" class="btn btn-primary" style="margin: 0">Modifica</button>
+    <input type="hidden" name="method" value="PUT">
+</form>
+
+<div th:replace="footer"/>

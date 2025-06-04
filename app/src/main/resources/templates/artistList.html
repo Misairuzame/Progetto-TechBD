@@ -1,0 +1,21 @@
+<div th:replace="header"/>
+
+<h1 class="display-1 text-primary">Tabella Artist</h1>
+<table align="center" class="table table-striped table-dark table-hover" width="50%" cellpadding="5">
+    <thead class="bg-primary">
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>GroupID</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="artist: ${artistList}">
+        <td th:text="${artist.getArtistId()}"/>
+        <td th:text="${artist.getName()}"/>
+        <td th:text="${artist.getGroupId()}"/>
+    </tr>
+    </tbody>
+</table>
+
+<div th:replace="footer"/>

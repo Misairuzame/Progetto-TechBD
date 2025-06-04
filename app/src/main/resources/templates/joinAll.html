@@ -1,0 +1,57 @@
+<div th:replace="header" />
+
+<h1 class="display-1 text-warning">Tabella JoinAll</h1>
+<p class="text-light">La query completa &egrave;:<br /><br />
+    SELECT M.musicid, M.title AS musictitle, Gr.name AS groupname, Tmp.numartisti,<br />
+    Al.title AS albumtitle, M.year, Ge.name AS genrename, COUNT(L.link) AS numlink<br />
+    FROM music AS M<br />
+    -- Join con artist per recuperare groupid<br />
+    INNER JOIN artist AS Ar ON M.authorid = Ar.artistid<br />
+    -- Join con grouptable per groupname<br />
+    INNER JOIN grouptable AS Gr ON Ar.groupid = Gr.groupid<br />
+    -- Join con tabella temporanea che conta artisti per gruppo<br />
+    LEFT JOIN (<br />
+    &emsp; SELECT groupid, COUNT(*) AS numartisti<br />
+    &emsp; FROM artist<br />
+    &emsp; GROUP BY groupid<br />
+    ) AS Tmp ON (Ar.groupid = Tmp.groupid)<br />
+    -- Join con album<br />
+    LEFT JOIN album AS Al ON (M.albumid = Al.albumid)<br />
+    -- Join con genere<br />
+    INNER JOIN genre AS Ge ON (M.genreid = Ge.genreid)<br />
+    -- Join con link<br />
+    LEFT JOIN link AS L ON (M.musicid = L.musicid)<br />
+    GROUP BY M.musicid, Gr.name, Al.title, Ge.name, Tmp.numartisti<br />
+</p>
+<p class="text-light">
+    Pi&ugrave; semplicemente:
+    (Music &#10781; Artist &#10781; Group) &#10197; Album &#10781; Genre &#10197; Link &#10197; (#Artist per Group)
+</p>
+<table align="center" class="table table-striped table-dark table-hover" width="50%" cellpadding="5">
+    <thead class="bg-warning text-dark">
+        <tr>
+            <th>MusicID</th>
+            <th>MusicTitle</th>
+            <th>GroupName</th>
+            <th>NumArtists</th>
+            <th>AlbumTitle</th>
+            <th>Year</th>
+            <th>GenreName</th>
+            <th>NumLinks</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:each="music: ${joinAllList}">
+            <td th:text="${music.getMusicId()}" />
+            <td th:text="${music.getMusicTitle()}" />
+            <td th:text="${music.getGroupName()}" />
+            <td th:text="${music.getNumArtists()}" />
+            <td th:text="${music.getAlbumTitle()}" />
+            <td th:text="${music.getYear()}" />
+            <td th:text="${music.getGenreName()}" />
+            <td th:text="${music.getNumLinks()}" />
+        </tr>
+    </tbody>
+</table>
+
+<div th:replace="footer" />

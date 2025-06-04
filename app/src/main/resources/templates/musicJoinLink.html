@@ -1,0 +1,30 @@
+<div th:replace="header"/>
+
+<h1 class="display-1 text-warning">Tabella Music &#10781; Link</h1>
+<h2 class="text-light">Music &#10197; Link</h2>
+<table align="center" class="table table-striped table-dark table-hover" width="50%" cellpadding="5">
+    <thead class="bg-warning text-dark">
+    <tr>
+        <th>MusicID</th>
+        <th>Title</th>
+        <th>AuthorID</th>
+        <th>AlbumID</th>
+        <th>Year</th>
+        <th>GenreID</th>
+        <th>Link</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="music: ${musicJoinLinkList}">
+        <td th:text="${music.getMusic().getMusicId()}"/>
+        <td th:text="${music.getMusic().getTitle()}"/>
+        <td th:text="${music.getMusic().getAuthorId()}"/>
+        <td th:text="${music.getMusic().getAlbumId()}"/>
+        <td th:text="${music.getMusic().getYear()}"/>
+        <td th:text="${music.getMusic().getGenreId()}"/>
+        <td th:text="${music.getLink().getLink()}"/>
+    </tr>
+    </tbody>
+</table>
+
+<div th:replace="footer"/>
